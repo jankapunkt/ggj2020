@@ -1,5 +1,5 @@
 import AudioPlayer from './AudioPlayer.js'
-import Bitmap from './BitMap.js'
+import Texture from './Texture.js'
 import CanvasBuffer from './CanvasBuffer.js'
 import Camera from './Camera.js'
 import Controls from './Controls.js'
@@ -13,7 +13,7 @@ import Status from './Status.js'
 
 export default {
   AudioPlayer,
-  Bitmap,
+  Texture,
   CanvasBuffer,
   Camera,
   Controls,

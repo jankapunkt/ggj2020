@@ -30,6 +30,7 @@ GameLoop.prototype.frame = function (time) {
   if (seconds < 0.2) {
     this.callback(seconds)
   }
+
   if (!this.stopped) {
     window.requestAnimationFrame(this.frame)
   }

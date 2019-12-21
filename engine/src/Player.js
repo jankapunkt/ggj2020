@@ -1,4 +1,4 @@
-import Bitmap from './BitMap.js'
+import Texture from './Texture.js'
 import AudioPlayer from './AudioPlayer.js'
 import Globals from './Globals.js'
 
@@ -10,7 +10,7 @@ function Player ({ x, y, direction, health, defaultSpeed, runFactor, sounds }) {
   this.runFactor = runFactor || 1.5
   this.speed = this.defaultSpeed
   this.direction = direction
-  this.weapon = new Bitmap('assets/knife_hand.png', 319, 320)
+  this.weapon = new Texture('assets/knife_hand.png', 319, 320)
   this.paces = 0
   this.eventDispatcher = new window.EventTarget()
   this.sounds = new AudioPlayer()
