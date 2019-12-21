@@ -1,0 +1,252 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Raycast Engine Demo</title>
+    <style>
+        html, body {
+            overflow: hidden;
+        }
+
+        body {
+            background: #000;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        canvas {
+            position: absolute;
+        }
+
+        #display {
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+        }
+
+        #status {
+            width: 100%;
+            height: 100%;
+            z-index: 3;
+        }
+
+        #minimap {
+            left: 2%;
+            bottom: 2%;
+            z-index: 4;
+        }
+
+        .info-ui {
+            font-weight: bold;
+            font-size: 10px;
+            color: #FFFFFF;
+            font-family: monospace;
+            position: absolute;
+            top: 2%;
+            left: 2%;
+        }
+
+        .title-screen {
+            z-index: 999;
+            position: absolute;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            text-align: center;
+            font-family: monospace;
+            font-size: 48px;
+            font-weight: bold;
+            color: #FFFFFF;
+        }
+    </style>
+</head>
+<body>
+<div class="title-screen">YOU REGAINED YOUR CONSCIOUSNESS...</div>
+<canvas id='display' width='1' height='1'></canvas>
+<canvas id='status' width='1' height='1'></canvas>
+<canvas id='minimap' width='1' height='1'></canvas>
+<div class="info-ui">
+    <div>
+        <span>FPS:</span>
+        <span class="fps-info">0</span>
+    </div>
+</div>
+<script type="module" content="text/javascript">
+  import engine from '../engine /src/index.js'
+
+  const Status = engine.Status
+  const Player = engine.Player
+  const Controls = engine.Controls
+  const Map = engine.Map
+  const Minimap = engine.Minimap
+  const Camera = engine.Camera
+  const GameLoop = engine.GameLoop
+  const Bitmap = engine.Bitmap
+
+  /**
+   * ---------------------------------------------------------
+   * GET CANVAS ELEMENTS
+   * ---------------------------------------------------------
+   */
+
+  const display = document.querySelector('#display')
+  const minimapCanvas = document.querySelector('#minimap')
+  const statusCanvas = document.querySelector('#status')
+
+  /**
+   * ---------------------------------------------------------
+   * CONFIGURATIONS
+   * ---------------------------------------------------------
+   */
+
+  const MOBILE = /Android|webOS|iPhone|iPad|iPod|BlackBerry/i.test(navigator.userAgent)
+
+  const cam1999 = {
+    canvas: display,
+    resolution: MOBILE ? 160 : 320,
+    focalLength: 0.8,
+    canvasScale: 0.25,
+    range: 14,
+    isMobile: MOBILE
+  }
+  const cam2019 = {
+    canvas: display,
+    resolution: MOBILE ? 160 : 640,
+    focalLength: 0.8,
+    canvasScale: 1,
+    range: 10,
+    lightRange: 6,
+    isMobile: MOBILE
+  }
+
+  const playerConfig = {
+    x: 15.3,
+    y: -1.2,
+    health: 100,
+    direction: Math.PI * 0.3,
+    defaultSpeed: 1.8,
+    runFactor: 1.8,
+    sounds: [ {
+      id: 'walk',
+      url: 'assets/audio/steps.mp3'
+    }, {
+      id: 'run',
+      url: 'assets/audio/steps_run.ogg'
+    } ]
+  }
+
+  const mapConfig = {
+    size: 32,
+    wallHeight: 1,
+    textures: {
+      sky: new Bitmap('assets/deathvalley_panorama.jpg', 2000, 750),
+      wall: [
+        new Bitmap('assets/textures/wall2.jpg', 2048, 2048),
+        new Bitmap('assets/textures/wall1.jpg', 2048, 2048),
+      ],
+      ground: new Bitmap('assets/textures/ground.jpg', 2048, 2048)
+    },
+    sounds: [ {
+      id: 'thunder',
+      url: 'assets/audio/thunder.ogg'
+    }, {
+      id: 'rain',
+      url: 'assets/audio/rain.ogg'
+    }, {
+      id: 'ambient',
+      url: 'assets/audio/ambient.mp3',
+      listeners: {
+        ended: () => {
+          // play ambient after 15 seconds
+          setTimeout(() => {
+            map.sounds.play('ambient', { volume: 0.8, loop: false })
+          }, 15 * 1000)
+        }
+      }
+    } ]
+  }
+
+  /**
+   * ---------------------------------------------------------
+   * GAME SETUP
+   * ---------------------------------------------------------
+   */
+
+
+  const player = new Player(playerConfig)
+
+  const statusScreen = new Status({ canvas: statusCanvas })
+  statusScreen.register(player)
+  statusCanvas.addEventListener('click', function () {
+    display.requestPointerLock = display.requestPointerLock || display.mozRequestPointerLock || display.webkitRequestPointerLock
+    display.requestPointerLock()
+  })
+
+  let mouseCaptured = false
+
+  document.addEventListener('pointerlockchange', function () {
+    mouseCaptured = !mouseCaptured
+    player.lockControls = !mouseCaptured
+    document.body.style.cursor = mouseCaptured ? 'none' : 'pointer'
+  })
+
+  const map = new Map(mapConfig)
+  map.randomize()
+
+  const camera = new Camera(cam2019)
+  const loop = new GameLoop()
+  const controls = new Controls()
+  const miniMap = new Minimap({
+    canvas: minimapCanvas,
+    map: map,
+    controls: controls,
+    scale: 16,
+    background: 'rgba(0,0,0,0)',
+    wallColor: 'rgba(255, 255, 255, 0.4)',
+    actorColor: 'rgba(0,255,0,0.7)'
+  })
+
+  miniMap.add(player)
+
+  player.on(Player.ON_DEAD, function (event) {
+    loop.stop()
+    alert('youre dead')
+  })
+
+  const title = document.querySelector('.title-screen')
+  title.addEventListener('click', function () {
+    title.style.display = 'none'
+    display.requestPointerLock = display.requestPointerLock || display.mozRequestPointerLock || display.webkitRequestPointerLock
+    display.requestPointerLock()
+
+    // play rain immediately
+    map.sounds.play('rain', { volume: 0.8, loop: true })
+
+    // play ambient after 15 seconds
+    setTimeout(() => {
+      map.sounds.play('ambient', { volume: 0.8, loop: false })
+    }, 15 * 1000)
+
+    loop.start(function frame (seconds) {
+      // updates
+      map.update(seconds)
+      player.update(controls.states, map, seconds);
+      camera.update(controls.states, player, map, seconds)
+      statusScreen.update(controls.states, seconds)
+      miniMap.update(controls.states, seconds)
+
+      // renders
+      camera.render(player, map)
+      statusScreen.render()
+      miniMap.render()
+    })
+  })
+
+</script>
+</body>
+</html>
