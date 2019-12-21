@@ -77,7 +77,7 @@
     </div>
 </div>
 <script type="module" content="text/javascript">
-  import engine from '../engine /src/index.js'
+  import engine from '../engine/src/index.js'
 
   const Status = engine.Status
   const Player = engine.Player
@@ -86,7 +86,7 @@
   const Minimap = engine.Minimap
   const Camera = engine.Camera
   const GameLoop = engine.GameLoop
-  const Bitmap = engine.Bitmap
+  const Texture = engine.Texture
 
   /**
    * ---------------------------------------------------------
@@ -108,7 +108,7 @@
 
   const cam1999 = {
     canvas: display,
-    resolution: MOBILE ? 160 : 320,
+    resolution: 320,
     focalLength: 0.8,
     canvasScale: 0.25,
     range: 14,
@@ -116,11 +116,11 @@
   }
   const cam2019 = {
     canvas: display,
-    resolution: MOBILE ? 160 : 640,
+    resolution: 1024,
     focalLength: 0.8,
     canvasScale: 1,
-    range: 10,
-    lightRange: 6,
+    range: 16,
+    lightRange: 5,
     isMobile: MOBILE
   }
 
@@ -144,12 +144,12 @@
     size: 32,
     wallHeight: 1,
     textures: {
-      sky: new Bitmap('assets/deathvalley_panorama.jpg', 2000, 750),
+      sky: new Texture('assets/deathvalley_panorama.jpg', 2000, 750),
       wall: [
-        new Bitmap('assets/textures/wall2.jpg', 2048, 2048),
-        new Bitmap('assets/textures/wall1.jpg', 2048, 2048),
+        new Texture('assets/textures/wall2.jpg', 2048, 2048),
+        new Texture('assets/textures/wall1.jpg', 2048, 2048),
       ],
-      ground: new Bitmap('assets/textures/ground.jpg', 2048, 2048)
+      ground: new Texture('assets/textures/ground.jpg', 2048, 2048)
     },
     sounds: [ {
       id: 'thunder',
