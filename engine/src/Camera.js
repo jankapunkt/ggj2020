@@ -2,7 +2,7 @@ import Globals from './Globals.js'
 import RayCache from './RayCache.js'
 import CanvasBuffer from './CanvasBuffer.js'
 
-function Camera ({ canvas, resolution, focalLength, canvasScale, range, lightRange, isMobile }) {
+function Camera ({ canvas, resolution, focalLength, canvasScale, range, lightRange, isMobile, scaleFactor }) {
   this.canvas = canvas
   this.ctx = canvas.getContext('2d')
   this.canvasScale = canvasScale || 1
@@ -15,7 +15,7 @@ function Camera ({ canvas, resolution, focalLength, canvasScale, range, lightRan
   this.focalLength = focalLength || 0.8
   this.range = range || (isMobile ? 8 : 14)
   this.lightRange = lightRange || 5
-  this.scale = (this.width + this.height) / 1200
+  this.scale = (this.width + this.height) / (scaleFactor || 1200)
   this.buffer = null
   this.rainEnabled = true
   this.rayCache = new RayCache()
@@ -155,7 +155,7 @@ Camera.prototype.drawColumn = function (column, ray, angle, map) {
     if (this.rainEnabled) {
       ctx.fillStyle = '#ffffff'
       ctx.globalAlpha = 0.15
-      let rainDrops = Math.pow(Math.random(), 3) * s
+      let rainDrops = Math.pow(Math.random(), 100) * s
       let rain = (rainDrops > 0) && this.project(0.1, angle, step.distance)
       while (--rainDrops > 0) {
         ctx.fillRect(left, Math.random() * rain.top, 1, rain.height)
