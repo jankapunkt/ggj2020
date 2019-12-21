@@ -198,7 +198,7 @@
   const map = new Map(mapConfig)
   map.randomize()
 
-  const camera = new Camera(cam2019)
+  const camera = new Camera(cam1999)
   const loop = new GameLoop()
   const controls = new Controls()
   const miniMap = new Minimap({
@@ -213,10 +213,28 @@
 
   miniMap.add(player)
 
+
   player.on(Player.ON_DEAD, function (event) {
     loop.stop()
     alert('youre dead')
   })
+
+  const monster = new Player({
+    x: map.size / 4,
+    y: map.size / 4,
+    health: 100,
+    direction: Math.PI * 0.3,
+    defaultSpeed: 1.8,
+    runFactor: 1.8,
+    sounds: [ {
+      id: 'walk',
+      url: 'assets/audio/steps.mp3'
+    }, {
+      id: 'run',
+      url: 'assets/audio/steps_run.ogg'
+    } ]
+  })
+  miniMap.add(monster)
 
   const title = document.querySelector('.title-screen')
   title.addEventListener('click', function () {
@@ -232,11 +250,14 @@
       map.sounds.play('ambient', { volume: 0.8, loop: false })
     }, 15 * 1000)
 
+    const actors = [monster]
+
     loop.start(function frame (seconds) {
       // updates
       map.update(seconds)
+      actors.forEach(actor => actor.update({}, map, seconds))
       player.update(controls.states, map, seconds);
-      camera.update(controls.states, player, map, seconds)
+      camera.update(controls.states, player, actors, map, seconds)
       statusScreen.update(controls.states, seconds)
       miniMap.update(controls.states, seconds)
 

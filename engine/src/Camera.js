@@ -18,11 +18,12 @@ function Camera ({ canvas, resolution, focalLength, canvasScale, range, lightRan
   this.scale = (this.width + this.height) / (scaleFactor || 1200)
   this.buffer = null
   this.rainEnabled = true
+
   this.rayCache = new RayCache()
-  this.playerCache = { x: 0, y: 0, direction: 0 }
+  this.actors = []
 }
 
-Camera.prototype.update = function (states, player, map) {
+Camera.prototype.update = function (states, player, actors, map) {
   if (states.map && !this.buffer) {
     const offScreenBuffer = new CanvasBuffer({ width: window.innerWidth, height: window.innerHeight })
     offScreenBuffer.pre(function (ctx) {
@@ -39,6 +40,7 @@ Camera.prototype.update = function (states, player, map) {
     this.buffer = null
   }
 
+  // update ray cache
   const cachedRays = this.rayCache.get(player)
   if (!cachedRays) {
     // prepare entries to be cached
@@ -55,6 +57,11 @@ Camera.prototype.update = function (states, player, map) {
 
     this.rayCache.add(player, cacheEntries)
   }
+
+  // update actors, find actors in view field
+  // TODO get math to calculate view field of actor
+  // TODO and add calculated values to this.actors
+  // TODO which will then be used to draw them in render
 }
 
 Camera.prototype.drawFromBuffer = function () { this.buffer.to(this.ctx) }
@@ -67,6 +74,7 @@ Camera.prototype.render = function (player, map) {
   this.drawGround(player.direction, map.ground, map.light)
   this.drawSky(player.direction, map.sky, map.light)
   this.drawColumns(player, map)
+  this.drawActors(player, map)
   this.drawWeapon(player.weapon, player.paces)
 }
 
@@ -163,6 +171,23 @@ Camera.prototype.drawColumn = function (column, ray, angle, map) {
     }
   }
 }
+
+Camera.prototype.drawActors = function (player, map) {
+  const actors = this.actors
+  if (actors.length === 0) return
+
+  const ctx = this.ctx
+  this.ctx.save()
+
+  ctx.fillStyle = '#ffAA00'
+  ctx.globalAlpha = 0.15
+  this.actors.forEach(actor => {
+
+  })
+  this.ctx.restore()
+
+}
+
 
 Camera.prototype.drawWeapon = function (weapon, paces) {
   const bobX = Math.cos(paces * 3) * this.scale * 6
