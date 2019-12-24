@@ -3,6 +3,7 @@ import Texture from './Texture.js'
 import CanvasBuffer from './CanvasBuffer.js'
 import Camera from './Camera.js'
 import Controls from './Controls.js'
+import Environment from './Environment.js'
 import GameLoop from './GameLoop.js'
 import Globals from './Globals.js'
 import Map from './Map.js'
@@ -16,6 +17,7 @@ export default {
   Texture,
   CanvasBuffer,
   Camera,
+  Environment,
   Controls,
   GameLoop,
   Globals,

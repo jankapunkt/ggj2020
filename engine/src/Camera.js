@@ -66,15 +66,18 @@ Camera.prototype.update = function (states, player, actors, map) {
 
 Camera.prototype.drawFromBuffer = function () { this.buffer.to(this.ctx) }
 
-Camera.prototype.render = function (player, map) {
+Camera.prototype.render = function (player, environment, map) {
+  // use buffered image for example when
+  // a menu is opened, the minimap is opened, etc.
   if (this.buffer) {
     this.drawFromBuffer()
     return
   }
-  this.drawGround(player.direction, map.ground, map.light)
-  this.drawSky(player.direction, map.sky, map.light)
-  this.drawColumns(player, map)
-  this.drawActors(player, map)
+
+  this.drawGround(player.direction, environment.ground, environment.light)
+  this.drawSky(player.direction, environment.sky, environment.light)
+  this.drawColumns(player, environment, map)
+  this.drawActors(player, environment, map)
   this.drawWeapon(player.weapon, player.paces)
 }
 
@@ -118,7 +121,7 @@ Camera.prototype.drawSky = function (direction, sky, ambient) {
   this.ctx.restore()
 }
 
-Camera.prototype.drawColumns = function (player, map) {
+Camera.prototype.drawColumns = function (player, environment) {
 
   const cachedRays = this.rayCache.get(player)
   if (!cachedRays) {
@@ -126,12 +129,12 @@ Camera.prototype.drawColumns = function (player, map) {
   }
   this.ctx.save()
   cachedRays.forEach(({ ray, angle }, index) => {
-    this.drawColumn(index, ray, angle, map)
+    this.drawColumn(index, ray, angle, environment)
   })
   this.ctx.restore()
 }
 
-Camera.prototype.drawColumn = function (column, ray, angle, map) {
+Camera.prototype.drawColumn = function (column, ray, angle, environment) {
   const ctx = this.ctx
   const left = Math.floor(column * this.spacing)
   const width = Math.ceil(this.spacing)
@@ -146,7 +149,7 @@ Camera.prototype.drawColumn = function (column, ray, angle, map) {
     const step = ray[ s ]
 
     if (s === hit) {
-      const texture = map.wall[step.height - 1]
+      const texture = environment.wall[step.height - 1]
       let textureX = Math.floor(texture.width * step.offset)
 
       // TODO use height value from a height map
@@ -156,7 +159,7 @@ Camera.prototype.drawColumn = function (column, ray, angle, map) {
       ctx.drawImage(texture.image, textureX, 0, 1, texture.height, left, wall.top, width, wall.height)
 
       ctx.fillStyle = '#000000'
-      ctx.globalAlpha = Math.max((step.distance + step.shading) / this.lightRange - map.light, 0)
+      ctx.globalAlpha = Math.max((step.distance + step.shading) / this.lightRange - environment.light, 0)
       ctx.fillRect(left, wall.top, width, wall.height)
     }
 

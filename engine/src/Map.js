@@ -1,35 +1,50 @@
-import AudioPlayer from './AudioPlayer.js'
-
-function Map ({ size, wallHeight, data, textures, sounds }) {
-  this.size = size
-  this.wallHeight = wallHeight && wallHeight - 1 || 0
-  this.wallGrid = new Uint8Array(size * size)
-  this.sky = textures.sky
-  this.wall = textures.wall
-  this.ground = textures.ground
-  this.light = 0
-  this.sounds = new AudioPlayer()
-  this.sounds.init(sounds)
+const defaults = {
+  width: 32,
+  height: 32,
 }
 
-Map.prototype.get = function (x, y) {
+
+function Map ({ width, height, data } = {}) {
+  this.width = width || defaults.width
+  this.height = height || defaults.height
+  this.size = this.width * this.height
+  this.data = new Uint8Array(this.size)
+  if (data) {
+    this.load(data)
+  }
+}
+
+Map.defaults = defaults
+
+Map.prototype.load = function (data) {
+  const self = this
+  data.forEach((value, index) => {
+    self.data[index] = value & 0xFF // to uint8
+  })
+}
+
+Map.prototype.set = function (x = -1, y = -1, value) {
   x = Math.floor(x)
   y = Math.floor(y)
-  if (x < 0 || x > this.size - 1 || y < 0 || y > this.size - 1) {
-    return -1
+  if (x < 0 || x > this.width - 1 || y < 0 || y > this.height - 1) {
+    return null
   }
-  return this.wallGrid[ y * this.size + x ]
+  this.data[ y * this.width + x ] = value
+  return value
 }
 
-function randomRange (min, max) {
-  return Math.random() * (max - min) + min;
+Map.prototype.get = function (x = -1, y = -1) {
+  x = Math.floor(x)
+  y = Math.floor(y)
+  if (x < 0 || x > this.width - 1 || y < 0 || y > this.height - 1) {
+    return null
+  }
+  return this.data[ y * this.width + x ]
 }
 
-Map.prototype.randomize = function () {
-  for (let i = 0; i < this.size * this.size; i++) {
-    this.wallGrid[ i ] = Math.random() < 0.3
-      ? 1 + Math.round(randomRange(0, 1))
-      : 0
+Map.prototype.randomize = function (depth = 0.3) {
+  for (let i = 0; i < this.size; i++) {
+    this.data[ i ] = Math.random() < depth ? 1 : 0
   }
 }
 
@@ -63,25 +78,23 @@ Map.prototype.cast = function (point, angle, range) {
     }
   }
 
+  // TODO memoize for different cos / sin values
   function inspect (step, shiftX, shiftY, distance, offset) {
     const dx = cos < 0 ? shiftX : 0
     const dy = sin < 0 ? shiftY : 0
     step.height = self.get(step.x - dx, step.y - dy)
     step.distance = distance + Math.sqrt(step.length2)
-    if (shiftX) step.shading = cos < 0 ? 2 : 0
-    else step.shading = sin < 0 ? 2 : 1
+    if (shiftX) {
+      step.shading = cos < 0 ? 2 : 0
+    } else {
+      step.shading = sin < 0 ? 2 : 1
+    }
     step.offset = offset - Math.floor(offset)
     return step
   }
 }
 
-Map.prototype.update = function (seconds) {
-  if (this.light > 0) {
-    this.light = Math.max(this.light - 10 * seconds, 0)
-  } else if (Math.random() * 8 < seconds) {
-    this.sounds.play('thunder', { volume: 0.5 })
-    this.light = 2
-  }
-}
+
+Map.prototype.update = function (seconds) {}
 
 export default Map
