@@ -134,12 +134,12 @@ Camera.prototype.drawColumns = function (player, environment) {
   const rays = this.rayCache.get(this.key)
   for (let i = 0, len = rays.length; i < len; i++) {
     const entry = rays[ i ]
-    this.drawColumn(i, entry, environment)
+    this.drawColumn(i, entry, player, environment)
   }
   this.ctx.restore()
 }
 
-Camera.prototype.drawColumn = function (column, ray, environment) {
+Camera.prototype.drawColumn = function (column, ray, player, environment) {
   const ctx = this.ctx
   const left = Math.floor(column * this.spacing)
   const width = Math.ceil(this.spacing)
@@ -159,7 +159,7 @@ Camera.prototype.drawColumn = function (column, ray, environment) {
       let textureX = Math.floor(texture.width * step.offset)
 
       // TODO use height value from a height map
-      let wall = this.project(1, angle, step.distance)
+      let wall = this.project(1, angle, player.directionV, step.distance)
 
       ctx.globalAlpha = 1
       ctx.drawImage(texture.image, textureX, 0, 1, texture.height, left, wall.top, width, wall.height)
@@ -174,7 +174,7 @@ Camera.prototype.drawColumn = function (column, ray, environment) {
       ctx.fillStyle = '#ffffff'
       ctx.globalAlpha = 0.15
       this.rainDrops = Math.pow(Math.random(), 100) * s
-      this.rain = (this.rainDrops > 0) && this.project(0.1, angle, step.distance)
+      this.rain = (this.rainDrops > 0) && this.project(0.1, angle, player.directionV, step.distance)
       while (--this.rainDrops > 0) {
         ctx.fillRect(left, Math.random() * this.rain.top, 1, this.rain.height)
       }
@@ -206,12 +206,12 @@ Camera.prototype.drawWeapon = function (weapon, paces) {
   this.ctx.drawImage(weapon.image, left, top, weapon.width * this.scale, weapon.height * this.scale)
 }
 
-Camera.prototype.project = function (height, angle, distance) {
-  const z = distance * Math.cos(angle)
+Camera.prototype.project = function (height, angleH, angleV, distance) {
+  const z = distance * Math.cos(angleH)
   const wallHeight = this.height * height / z
-  const bottom = this.height / 2 * (1 + 1 / z)
-  this.projectionCache.top = bottom - wallHeight,
-    this.projectionCache.height = wallHeight
+  const bottom = this.height / 2 * ((1  - angleV )+ 1 / z)
+  this.projectionCache.top = bottom - wallHeight
+  this.projectionCache.height = wallHeight
   return this.projectionCache
 }
 

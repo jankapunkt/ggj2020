@@ -19,7 +19,8 @@ function Controls (codes, mouseSensitivity) {
     'backward': false,
     'run': false,
     'map': false,
-    'rotateX': 0
+    'rotateX': 0,
+    'rotateY': 0
   }
   this.mouseSensitivity = mouseSensitivity || defaultMouse.sensitivity
   window.document.addEventListener('keydown', this.onKey.bind(this, true), false)

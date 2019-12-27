@@ -11,6 +11,7 @@ function Player ({ x, y, direction, health, defaultSpeed, runFactor, sounds }) {
   this.runFactor = runFactor || 1.5
   this.speed = this.defaultSpeed
   this.direction = direction
+  this.directionV = 0
   this.weapon = new Texture('assets/knife_hand.png', 319, 320)
   this.paces = 0
   this.eventDispatcher = new window.EventTarget()
@@ -50,7 +51,10 @@ Player.prototype.rotateH = function (angle) {
 }
 
 Player.prototype.rotateV = function (amount) {
-  this.viewPoint = amount
+  if ((amount > 0 && this.directionV > 1) || (amount < 0 && this.directionV < -1)) {
+    return
+  }
+  this.directionV = this.directionV + amount
 }
 
 Player.prototype.walk = function (distance, dir, map) {
