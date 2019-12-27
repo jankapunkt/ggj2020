@@ -85,7 +85,7 @@
 </div>
 <script type="module" content="text/javascript">
   import engine from '../engine/src/index.js'
-  
+
   const Status = engine.Status
   const Player = engine.Player
   const Controls = engine.Controls
@@ -163,7 +163,7 @@
       ],
       ground: new Texture('assets/textures/ground.jpg', 2048, 2048)
     },
-    sounds: [{
+    sounds: [ {
       id: 'thunder',
       url: 'assets/audio/thunder.ogg'
     }, {
@@ -180,7 +180,7 @@
           }, 15 * 1000)
         }
       }
-    }]
+    } ]
   }
 
   /**
@@ -188,7 +188,7 @@
    * GAME SETUP
    * ---------------------------------------------------------
    */
-	
+
   const environment = new Environment(envConfig)
   const player = new Player(playerConfig)
 
@@ -209,7 +209,7 @@
 
   const map = new Map(mapConfig)
   map.randomize()
-  
+
   const rayCaster = new RayCaster(map)
 
   const camera = new Camera(cam2019)
@@ -224,7 +224,6 @@
     wallColor: 'rgba(255, 255, 255, 0.4)',
     actorColor: 'rgba(0,255,0,0.7)'
   })
-
 
   player.on(Player.ON_DEAD, function (event) {
     loop.stop()
@@ -262,15 +261,15 @@
     }, 15 * 1000)
 
     const actors = [ monster ]
-    
-	loop.start(function frame (seconds) {
+
+    function frame (seconds) {
       // updates
-	  environment.update(seconds)
+      environment.update(seconds)
       player.update(controls.states, map, seconds)
       actors.forEach(actor => actor.update({}, map, seconds))
-	  camera.update(controls.states, player, actors, rayCaster, seconds)
-   
-	  // ui
+      camera.update(controls.states, player, actors, rayCaster, seconds)
+
+      // ui
       statusScreen.update(controls.states, seconds)
       miniMap.update(controls.states, player, seconds)
 
@@ -278,7 +277,9 @@
       camera.render(player, environment, map, rayCaster)
       statusScreen.render()
       miniMap.render()
-    })
+    }
+
+    loop.start(frame)
   })
 
 </script>

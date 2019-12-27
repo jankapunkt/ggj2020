@@ -29,6 +29,8 @@ GameLoop.prototype.frame = function (time) {
 
   if (seconds < 0.2) {
     this.callback(seconds)
+  } else {
+    console.log('skip', seconds)
   }
 
   if (!this.stopped) {
