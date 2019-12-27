@@ -95,6 +95,7 @@
   const Camera = engine.Camera
   const GameLoop = engine.GameLoop
   const Texture = engine.Texture
+  const RayCaster = engine.RayCaster
 
   /**
    * ---------------------------------------------------------
@@ -124,10 +125,10 @@
   }
   const cam2019 = {
     canvas: display,
-    resolution: 1024,
+    resolution: 640,
     focalLength: 0.8,
-    canvasScale: 1,
-    range: 16,
+    canvasScale: 0.5,
+    range: 14,
     lightRange: 5,
     isMobile: MOBILE
   }
@@ -208,8 +209,10 @@
 
   const map = new Map(mapConfig)
   map.randomize()
+  
+  const rayCaster = new RayCaster(map)
 
-  const camera = new Camera(cam1999)
+  const camera = new Camera(cam2019)
   const loop = new GameLoop()
   const controls = new Controls()
   const miniMap = new Minimap({
@@ -222,7 +225,6 @@
     actorColor: 'rgba(0,255,0,0.7)'
   })
 
-  miniMap.add(player)
 
   player.on(Player.ON_DEAD, function (event) {
     loop.stop()
@@ -244,7 +246,6 @@
       url: 'assets/audio/steps_run.ogg'
     } ]
   })
-  miniMap.add(monster)
 
   const title = document.querySelector('.title-screen')
   title.addEventListener('click', function () {
@@ -261,19 +262,20 @@
     }, 15 * 1000)
 
     const actors = [ monster ]
-
-    loop.start(function frame (seconds) {
+    
+	loop.start(function frame (seconds) {
       // updates
-      map.update(seconds)
 	  environment.update(seconds)
-      actors.forEach(actor => actor.update({}, map, seconds))
       player.update(controls.states, map, seconds)
-      camera.update(controls.states, player, actors, map, seconds)
+      actors.forEach(actor => actor.update({}, map, seconds))
+	  camera.update(controls.states, player, actors, rayCaster, seconds)
+   
+	  // ui
       statusScreen.update(controls.states, seconds)
-      miniMap.update(controls.states, seconds)
+      miniMap.update(controls.states, player, seconds)
 
       // renders
-      camera.render(player, environment)
+      camera.render(player, environment, map, rayCaster)
       statusScreen.render()
       miniMap.render()
     })

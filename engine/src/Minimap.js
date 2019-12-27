@@ -1,35 +1,29 @@
 function Minimap ({ canvas, map, scale, background, wallColor, actorColor }) {
   this.canvas = canvas
   this.ctx = canvas.getContext('2d')
+  this.canvas.width = map.width * scale
+  this.canvas.height = map.height * scale
   this.map = map
-  this.actors = new Set()
   this.scale = scale || 1
   this.bg = background || '#FFFFFF'
   this.wallColor = wallColor || '#A4A4A4'
   this.actorColor = actorColor || '#4A4A4A'
-
-  canvas.width = map.size * scale
-  canvas.height = map.size * scale
-
   this.debug = false
 }
 
-Minimap.prototype.add = function (actor) {
-  this.actors.add(actor)
-}
-
-Minimap.prototype.remove = function (actor) {
-  this.actors.delete(actor)
-}
-
-Minimap.prototype.update = function (state) {
-  if (state.map) this.drawActive = true
+Minimap.prototype.update = function (state, player) {
+  if (state.map) {
+    this.drawActive = true
+    this.x = player.x
+    this.y = player.y
+    this.direction = player.direction
+  }
   if (!state.map && this.drawActive) {
     this.drawActive = false
     const ctx = this.ctx
     const map = this.map
-    const mapWidth = map.size
-    const mapHeight = map.size
+    const mapWidth = map.width
+    const mapHeight = map.height
     const scale = this.scale
     ctx.clearRect(0, 0, mapWidth * scale, mapHeight * scale)
   }
@@ -40,10 +34,9 @@ Minimap.prototype.render = function () {
 
   const ctx = this.ctx
   const map = this.map
-  const mapWidth = map.size
-  const mapHeight = map.size
+  const mapWidth = map.width
+  const mapHeight = map.height
   const scale = this.scale
-  const actors = this.actors
 
   ctx.clearRect(0, 0, mapWidth * scale, mapHeight * scale)
 
@@ -62,19 +55,17 @@ Minimap.prototype.render = function () {
     }
   }
 
-  actors.forEach(actor => {
-    // player as mini square
-    ctx.fillStyle = this.actorColor
-    ctx.fillRect(actor.x * scale - 2, actor.y * scale - 2, 4, 4)
+  // player as mini square
+  ctx.fillStyle = this.actorColor
+  ctx.fillRect(this.x * scale - 2, this.y * scale - 2, 4, 4)
 
-    // player direction
-    ctx.beginPath()
-    ctx.strokeStyle = this.actorColor
-    ctx.moveTo(actor.x * scale, actor.y * scale)
-    ctx.lineTo((actor.x + Math.cos(actor.direction) * 4) * scale, (actor.y + Math.sin(actor.direction) * 4) * scale)
-    ctx.closePath()
-    ctx.stroke()
-  })
+  // player direction
+  ctx.beginPath()
+  ctx.strokeStyle = this.actorColor
+  ctx.moveTo(this.x * scale, this.y * scale)
+  ctx.lineTo((this.x + Math.cos(this.direction) * 4) * scale, (this.y + Math.sin(this.direction) * 4) * scale)
+  ctx.closePath()
+  ctx.stroke()
 
   ctx.fillStyle = this.bg
 }

@@ -1,5 +1,5 @@
+import Cache from './Cache.js'
 import Globals from './Globals.js'
-import RayCache from './RayCache.js'
 import CanvasBuffer from './CanvasBuffer.js'
 
 function Camera ({ canvas, resolution, focalLength, canvasScale, range, lightRange, isMobile, scaleFactor }) {
@@ -19,11 +19,13 @@ function Camera ({ canvas, resolution, focalLength, canvasScale, range, lightRan
   this.buffer = null
   this.rainEnabled = true
 
-  this.rayCache = new RayCache()
-  this.actors = []
+  // current rays
+  this.rayCache = new Cache()
+  this.rays = []
+  this.projectionCache = {}
 }
 
-Camera.prototype.update = function (states, player, actors, map) {
+Camera.prototype.update = function (states, player, actors, rayCaster) {
   if (states.map && !this.buffer) {
     const offScreenBuffer = new CanvasBuffer({ width: window.innerWidth, height: window.innerHeight })
     offScreenBuffer.pre(function (ctx) {
@@ -40,22 +42,22 @@ Camera.prototype.update = function (states, player, actors, map) {
     this.buffer = null
   }
 
-  // update ray cache
-  const cachedRays = this.rayCache.get(player)
-  if (!cachedRays) {
-    // prepare entries to be cached
-    const cacheEntries = []
-    cacheEntries.length = this.resolution
-
-    // cast all rays and add to cache
+  // cast rays only if player moves, otherwise
+  // we just use the rays from the last cast because there
+  // is nothing new to be drawn on the screen
+  this.key = player.x.toString() + player.y.toString() + player.direction.toString()
+  const cachedRays = this.rayCache.get(this.key)
+  if (!cachedRays) { //this.rays.length < this.resolution || player.isRotating || player.isMoving) {
+    const rays = []
+    rays.length = this.resolution
     for (let column = 0; column < this.resolution; column++) {
       const x = column / this.resolution - 0.5
       const angle = Math.atan2(x, this.focalLength)
-      const ray = map.cast(player, player.direction + angle, this.range)
-      cacheEntries[ column ] = { ray, angle }
+      const ray = rayCaster.cast(player, player.direction + angle, this.range)
+      ray.angle = angle
+      rays[ column ] = ray
     }
-
-    this.rayCache.add(player, cacheEntries)
+    this.rayCache.add(rays, this.key)
   }
 
   // update actors, find actors in view field
@@ -66,7 +68,7 @@ Camera.prototype.update = function (states, player, actors, map) {
 
 Camera.prototype.drawFromBuffer = function () { this.buffer.to(this.ctx) }
 
-Camera.prototype.render = function (player, environment, map) {
+Camera.prototype.render = function (player, environment, map, rayCaster) {
   // use buffered image for example when
   // a menu is opened, the minimap is opened, etc.
   if (this.buffer) {
@@ -76,8 +78,8 @@ Camera.prototype.render = function (player, environment, map) {
 
   this.drawGround(player.direction, environment.ground, environment.light)
   this.drawSky(player.direction, environment.sky, environment.light)
-  this.drawColumns(player, environment, map)
-  this.drawActors(player, environment, map)
+  this.drawColumns(player, environment, rayCaster)
+//  this.drawActors(player, environment, map)
   this.drawWeapon(player.weapon, player.paces)
 }
 
@@ -87,13 +89,15 @@ Camera.prototype.drawGround = function (direction, ground, ambient) {
 
   this.ctx.save()
   this.ctx.fillStyle = '#030100'
-  // this.ctx.globalAlpha = 0.3
-  // this.ctx.drawImage(ground.image, left, 0, width, this.height)
   this.ctx.fillRect(left, 0, width, this.height)
+
+  // this.ctx.drawImage(ground.image, left, this.height / 2, width, this.height)
+
   if (left < width - this.width) {
-    // this.ctx.drawImage(ground.image, left + width, 0, width, this.height)
-    this.ctx.fillRect(left +width, 0, width, this.height)
+    // this.ctx.drawImage(ground.image, left + width, this.height / 2, width, this.height)
+    this.ctx.fillRect(left + width, 0, width, this.height)
   }
+
   if (ambient > 0) {
     this.ctx.fillStyle = '#ffffff'
     this.ctx.globalAlpha = ambient * 0.1
@@ -107,6 +111,10 @@ Camera.prototype.drawSky = function (direction, sky, ambient) {
   const left = (direction / Globals.CIRCLE) * -width
 
   this.ctx.save()
+
+  // draw sky texture
+  //this.ctx.fillStyle = '#ffffff'
+  //this.ctx.globalAlpha = 0.2
   this.ctx.drawImage(sky.image, 0, 0, sky.width, sky.height / 2, left, 0, width, this.height / 2)
 
   // allow seamless image in 360 degree rotation
@@ -122,22 +130,20 @@ Camera.prototype.drawSky = function (direction, sky, ambient) {
 }
 
 Camera.prototype.drawColumns = function (player, environment) {
-
-  const cachedRays = this.rayCache.get(player)
-  if (!cachedRays) {
-    throw new Error('Ray not found in cache for this position')
-  }
   this.ctx.save()
-  cachedRays.forEach(({ ray, angle }, index) => {
-    this.drawColumn(index, ray, angle, environment)
-  })
+  const rays = this.rayCache.get(this.key)
+  for (let i = 0, len = rays.length; i < len; i++) {
+    const entry = rays[ i ]
+    this.drawColumn(i, entry, environment)
+  }
   this.ctx.restore()
 }
 
-Camera.prototype.drawColumn = function (column, ray, angle, environment) {
+Camera.prototype.drawColumn = function (column, ray, environment) {
   const ctx = this.ctx
   const left = Math.floor(column * this.spacing)
   const width = Math.ceil(this.spacing)
+  const angle = ray.angle
   let hit = -1
 
   // scanning the current ray by checking if this hit
@@ -149,7 +155,7 @@ Camera.prototype.drawColumn = function (column, ray, angle, environment) {
     const step = ray[ s ]
 
     if (s === hit) {
-      const texture = environment.wall[step.height - 1]
+      const texture = environment.wall[ step.height - 1 ]
       let textureX = Math.floor(texture.width * step.offset)
 
       // TODO use height value from a height map
@@ -163,13 +169,14 @@ Camera.prototype.drawColumn = function (column, ray, angle, environment) {
       ctx.fillRect(left, wall.top, width, wall.height)
     }
 
+    // TODO to environment
     if (this.rainEnabled) {
       ctx.fillStyle = '#ffffff'
       ctx.globalAlpha = 0.15
-      let rainDrops = Math.pow(Math.random(), 100) * s
-      let rain = (rainDrops > 0) && this.project(0.1, angle, step.distance)
-      while (--rainDrops > 0) {
-        ctx.fillRect(left, Math.random() * rain.top, 1, rain.height)
+      this.rainDrops = Math.pow(Math.random(), 100) * s
+      this.rain = (this.rainDrops > 0) && this.project(0.1, angle, step.distance)
+      while (--this.rainDrops > 0) {
+        ctx.fillRect(left, Math.random() * this.rain.top, 1, this.rain.height)
       }
     }
   }
@@ -191,7 +198,6 @@ Camera.prototype.drawActors = function (player, map) {
 
 }
 
-
 Camera.prototype.drawWeapon = function (weapon, paces) {
   const bobX = Math.cos(paces * 3) * this.scale * 6
   const bobY = Math.sin(paces * 5) * this.scale * 6
@@ -204,10 +210,9 @@ Camera.prototype.project = function (height, angle, distance) {
   const z = distance * Math.cos(angle)
   const wallHeight = this.height * height / z
   const bottom = this.height / 2 * (1 + 1 / z)
-  return {
-    top: bottom - wallHeight,
-    height: wallHeight
-  }
+  this.projectionCache.top = bottom - wallHeight,
+    this.projectionCache.height = wallHeight
+  return this.projectionCache
 }
 
 export default Camera

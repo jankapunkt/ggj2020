@@ -5,6 +5,7 @@ import Globals from './Globals.js'
 function Player ({ x, y, direction, health, defaultSpeed, runFactor, sounds }) {
   this.x = x
   this.y = y
+  this.isMoving = false
   this.health = health || 100
   this.defaultSpeed = defaultSpeed || 2.7
   this.runFactor = runFactor || 1.5
@@ -44,14 +45,17 @@ Player.prototype.damage = function (value, damageSource) {
   }
 }
 
-Player.prototype.rotate = function (angle) {
+Player.prototype.rotateH = function (angle) {
   this.direction = (this.direction + angle + Globals.CIRCLE) % (Globals.CIRCLE)
+}
+
+Player.prototype.rotateV = function (amount) {
+  this.viewPoint = amount
 }
 
 Player.prototype.walk = function (distance, dir, map) {
   const dx = Math.cos(this.direction + dir) * distance
   const dy = Math.sin(this.direction + dir) * distance
-
   const mapx = map.get(this.x + dx, this.y)
   const mapy = map.get(this.x, this.y + dy)
 
@@ -92,20 +96,33 @@ Player.prototype.update = function (controls, map, seconds) {
   if (controls.map || this.lockControls) {
     this.runSound(false)
     this.walkSound(false)
+    this.isMoving = false
+    this.isRotating = false
     return
   }
 
+  this.isRotating = false
+
   if (controls.rotateX) {
-    this.rotate(controls.rotateX / 15 * Math.PI * seconds)
+    this.rotateH(controls.rotateX / 15 * Math.PI * seconds)
     controls.rotateX = 0
+    this.isRotating = true
+  }
+
+  if (controls.rotateY) {
+    this.rotateV(controls.rotateY / 15 * Math.PI * seconds)
+    controls.rotateY = 0
+    this.isRotating = true
   }
 
   if (!controls.left && !controls.right && !controls.forward && !controls.backward) {
     this.runSound(false)
     this.walkSound(false)
+    this.isMoving = false
     return
   }
 
+  this.isMoving = true
   let isRunning = false
   let speed = this.speed
 

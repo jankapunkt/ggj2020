@@ -17,13 +17,16 @@ function Environment ({ light, sounds, textures } = 0) {
 }
 
 Environment.prototype.update = function (seconds) {
-  // TODO provide a callback to define this behavior
   if (this.light > 0) {
     this.light = Math.max(this.light - 10 * seconds, 0)
   } else if (Math.random() * 8 < seconds) {
     this.sounds.play('thunder', { volume: 0.5 })
     this.light = 2
   }
+}
+
+Environment.prototype.render = function () {
+
 }
 
 export default Environment

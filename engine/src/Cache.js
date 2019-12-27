@@ -33,8 +33,8 @@ Cache.prototype.key = function (args) {
  * @throws if strict an error is thrown when a value exists for the generated key
  */
 
-Cache.prototype.add = function (value, ...args) {
-  const key = this.key(args)
+Cache.prototype.add = function (value, key) {
+  // const key = this.key(args)
   const keyExists = Object.prototype.hasOwnProperty.call(this.map, key)
   if (this.strict && keyExists) {
     throw new Error(`Expected no value to be present for key <${key}>`)
@@ -53,8 +53,8 @@ Cache.prototype.add = function (value, ...args) {
  * @throws in strict mode it throws an error if the object keys are not the same size of the size counter.
  */
 
-Cache.prototype.get = function (...args) {
-  const key = this.key(args)
+Cache.prototype.get = function (key) {
+//  const key = this.key(args)
   return this.map[ key ]
 }
 
