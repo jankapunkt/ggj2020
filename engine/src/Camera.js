@@ -18,9 +18,8 @@ function Camera ({ canvas, resolution, focalLength, canvasScale, range, isMobile
   this.buffer = null
   this.rainEnabled = true
 
-  // current rays
+  // caches
   this.rayCache = new Cache()
-  this.rays = []
   this.projectionCache = {}
 }
 
@@ -75,19 +74,20 @@ Camera.prototype.render = function (player, environment, map, rayCaster) {
     return
   }
 
-  this.drawGround(player.direction, environment.ground.texture, environment.light)
-  this.drawSky(player.direction, environment.sky.texture, environment.light)
+  this.drawGround(player, environment)
+  this.drawSky(player, environment)
   this.drawColumns(player, environment, rayCaster)
 //  this.drawActors(player, environment, map)
   this.drawWeapon(player.weapon, player.paces)
 }
 
-Camera.prototype.drawGround = function (direction, ground, ambient) {
+Camera.prototype.drawGround = function (player, environment) {
+  const ground = environment.ground.texture
   const width = ground.width * (this.height / ground.height) * 2
-  const left = (direction / Globals.CIRCLE) * -width
+  const left = (player.direction / Globals.CIRCLE) * -width
 
   this.ctx.save()
-  this.ctx.fillStyle = '#030100'
+  this.ctx.fillStyle = '#FF00FF'//'#030100'
   this.ctx.fillRect(left, 0, width, this.height)
 
   // this.ctx.drawImage(ground.image, left, this.height / 2, width, this.height)
@@ -97,32 +97,35 @@ Camera.prototype.drawGround = function (direction, ground, ambient) {
     this.ctx.fillRect(left + width, 0, width, this.height)
   }
 
-  if (ambient > 0) {
+  if (environment.light > 0) {
     this.ctx.fillStyle = '#ffffff'
-    this.ctx.globalAlpha = ambient * 0.1
+    this.ctx.globalAlpha = environment.light * 0.1
     this.ctx.fillRect(0, this.height * 0.5, this.width, this.height * 0.5)
   }
   this.ctx.restore()
 }
 
-Camera.prototype.drawSky = function (direction, sky, ambient) {
+Camera.prototype.drawSky = function (player,  environment) {
+  const sky = environment.sky.texture
+  if (!sky || !sky.loaded) return
+
   const width = sky.width * (this.height / sky.height) * 2
-  const left = (direction / Globals.CIRCLE) * -width
+  const left = (player.direction / Globals.CIRCLE) * -width
 
   this.ctx.save()
 
-  // draw sky texture
-  //this.ctx.fillStyle = '#ffffff'
-  //this.ctx.globalAlpha = 0.2
-  this.ctx.drawImage(sky.image, 0, 0, sky.width, sky.height / 2, left, 0, width, this.height / 2)
+  // draw sky texture only as a half of the image to support
+  // a natural sky feeling when player is looking vertically
+  const v = -player.directionV * sky.height
+  this.ctx.drawImage(sky.image, 0, v, sky.width, sky.height, left, 0, width, this.height / 2)
 
   // allow seamless image in 360 degree rotation
   if (left < width - this.width) {
     this.ctx.drawImage(sky.image, 0, 0, sky.width, sky.height / 2, left + width, 0, width, this.height / 2)
   }
-  if (ambient > 0) {
+  if (environment.light > 0) {
     this.ctx.fillStyle = '#ffffff'
-    this.ctx.globalAlpha = ambient * 0.1
+    this.ctx.globalAlpha = environment.light * 0.1
     this.ctx.fillRect(0, this.height * 0.5, this.width, this.height * 0.5)
   }
   this.ctx.restore()
@@ -168,7 +171,9 @@ Camera.prototype.drawColumn = function (column, ray, player, environment) {
       ctx.fillRect(left, wall.top, width, wall.height)
     }
 
-    // TODO to environment
+    // draw rain from environment for this column
+    // so we can draw more drops on top of a wall
+    // by knowing its boundaries and projection
     if (environment.rain && !environment.rain.disabled) {
       ctx.fillStyle = '#ffffff'
       ctx.globalAlpha = 0.15

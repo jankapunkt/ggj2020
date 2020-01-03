@@ -55,6 +55,9 @@ Player.prototype.rotateV = function (amount) {
     return
   }
   this.directionV = this.directionV + amount
+  if (this.directionV > 1) this.directionV = 1
+  if (this.directionV < -1) this.directionV = -1
+  console.log(this.directionV)
 }
 
 Player.prototype.walk = function (distance, dir, map) {

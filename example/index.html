@@ -118,11 +118,10 @@
   }
   const cam2019 = {
     canvas: display,
-    resolution: 640,
+    resolution: 1024,
     focalLength: 0.8,
-    canvasScale: 0.5,
+    canvasScale: 1,
     range: 14,
-    lightRange: 5,
     isMobile: MOBILE
   }
 
@@ -149,7 +148,7 @@
 
   const envConfig = {
     sky: {
-      texture: new Texture('assets/deathvalley_panorama.jpg', 2000, 750)
+      texture: new Texture('assets/textures/citybg.jpg', 4096, 1024)
     },
     wall: {
       textures: [
