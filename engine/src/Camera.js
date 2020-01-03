@@ -2,7 +2,7 @@ import Cache from './Cache.js'
 import Globals from './Globals.js'
 import CanvasBuffer from './CanvasBuffer.js'
 
-function Camera ({ canvas, resolution, focalLength, canvasScale, range, lightRange, isMobile, scaleFactor }) {
+function Camera ({ canvas, resolution, focalLength, canvasScale, range, isMobile, scaleFactor }) {
   this.canvas = canvas
   this.ctx = canvas.getContext('2d')
   this.canvasScale = canvasScale || 1
@@ -14,7 +14,6 @@ function Camera ({ canvas, resolution, focalLength, canvasScale, range, lightRan
   this.spacing = this.width / resolution
   this.focalLength = focalLength || 0.8
   this.range = range || (isMobile ? 8 : 14)
-  this.lightRange = lightRange || 5
   this.scale = (this.width + this.height) / (scaleFactor || 1200)
   this.buffer = null
   this.rainEnabled = true
@@ -165,7 +164,7 @@ Camera.prototype.drawColumn = function (column, ray, player, environment) {
       ctx.drawImage(texture.image, textureX, 0, 1, texture.height, left, wall.top, width, wall.height)
 
       ctx.fillStyle = '#000000'
-      ctx.globalAlpha = Math.max((step.distance + step.shading) / this.lightRange - environment.light, 0)
+      ctx.globalAlpha = Math.max((step.distance + step.shading) / environment.ambient.light - environment.light, 0)
       ctx.fillRect(left, wall.top, width, wall.height)
     }
 

@@ -1,7 +1,6 @@
 import AudioPlayer from './AudioPlayer.js'
 
 const defaults = {
-  light: 0,
   thunder: {
     volume: 0.5,
     seed: 8
@@ -9,7 +8,7 @@ const defaults = {
 }
 
 function Environment ({ sky, wall, ground, light, rain, thunder, ambient } = 0) {
-  this.light = light || defaults.light
+  this.light = 0
 
   this.rain = rain
   this.thunder = thunder
