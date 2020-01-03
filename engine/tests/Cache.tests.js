@@ -3,7 +3,10 @@ import { assert } from 'chai'
 import Cache from '../src/Cache.js'
 
 const keyFunction = num => num * 2
-const create = options => new Cache(keyFunction, options)
+const create = (options = {}) => {
+  options.keyFunction = keyFunction
+  return new Cache(options)
+}
 
 describe('Cache', function () {
   describe('constructor', function () {
@@ -74,7 +77,7 @@ describe('Cache', function () {
     it('returns the amount of the added values', function () {
       const cache = create()
       assert.equal(cache.size(), 0)
-      const amount = Math.round(Math.random() * 100)
+      const amount = Math.floor(Math.random() * cache.limit)
       for (let i = 0; i< amount; i++) {
         cache.add(i, i)
       }
@@ -84,7 +87,7 @@ describe('Cache', function () {
     it('checks the keys as size in strict mode', function () {
       const cache = create({strict: true})
       assert.equal(cache.size(), 0)
-      const amount = Math.round(Math.random() * 100)
+      const amount = Math.floor(Math.random() * cache.limit)
       for (let i = 0; i< amount; i++) {
         cache.add(i, i)
       }
@@ -94,7 +97,7 @@ describe('Cache', function () {
     it ('throws if there is a mismatch between keys and size in strict mode', function () {
       const cache = create({strict: true})
       assert.equal(cache.size(), 0)
-      const amount = Math.round(Math.random() * 100)
+      const amount = Math.floor(Math.random() * cache.limit)
       for (let i = 0; i< amount; i++) {
         cache.add(i, i)
       }
@@ -105,11 +108,23 @@ describe('Cache', function () {
     })
   })
 
+  describe('memory leak prevention', function () {
+    it ('clears if the limit has been exceeded', function () {
+      const cache = create({strict: true})
+      assert.equal(cache.size(), 0)
+      const amount = Math.floor(Math.random() * cache.limit)
+      for (let i = 0; i< amount * 10; i++) {
+        cache.add(i, i)
+      }
+      assert.isTrue(cache.size() <= amount)
+    })
+  })
+
   describe('dispose', function () {
     it ('removes all references from the map', function () {
       const cache = create({strict: false})
       assert.equal(cache.size(), 0)
-      const amount = Math.round(Math.random() * 100)
+      const amount = Math.floor(Math.random() * cache.limit)
       let i
       for (i = 0; i< amount; i++) {
         cache.add(i, i)

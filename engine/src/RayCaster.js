@@ -16,7 +16,7 @@ function RayCaster (map) {
   this.map = map
 
   // caches
-  this.cache = new Cache()
+  this.cache = new Cache({strict: true})
   this.origin = { height: 0, distance: 0 }
   this.noWall = { length2: Infinity }
 }

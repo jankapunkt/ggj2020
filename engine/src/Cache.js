@@ -1,19 +1,24 @@
 const defaults = {
-  keyFunction: val => val
+  keyFunction: val => val,
+  limit: 32,
+  strict: false
 }
 
 /**
  * Simple generic cache to store values by using a function to generate keys.
  * @param keyFunction the function to generate a key by given arguments
  * @param strict optional, defaults to false
+ * @param limit optional the maximum size of the cache
  * @constructor
  */
 
-function Cache (keyFunction = defaults.keyFunction, { strict = false } = {}) {
+function Cache ({ keyFunction, strict, limit, owner } = {}) {
   this.map = {}
   this.count = 0
-  this.strict = strict
-  this.keyFunction = keyFunction
+  this.strict = strict || defaults.strict
+  this.keyFunction = keyFunction || defaults.keyFunction
+  this.limit = limit || defaults.limit
+  this.owner = owner
 }
 
 /**
@@ -43,6 +48,18 @@ Cache.prototype.add = function (value, key) {
   this.map[ key ] = value
   if (!keyExists) {
     this.count++
+  }
+
+  // delete the first occurrence in the map
+  // that is not our new added key if limit
+  // is exceeded by our current size
+  if (this.count >= this.limit) {
+    for (const deleteKey in this.map) {
+      if (deleteKey !== key) {
+        delete this.map[deleteKey]
+        this.count--
+      }
+    }
   }
 }
 
@@ -78,6 +95,7 @@ Cache.prototype.dispose = function () {
   delete this.count
   delete this.strict
   delete this.keyFunction
+  delete this.owner
 }
 
 export default Cache
