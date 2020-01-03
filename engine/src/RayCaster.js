@@ -11,7 +11,7 @@ const defaults = {
   keyFunction: (x, y, angle, range) => `${x};${y};${angle};${range}`
 }
 
-function RayCaster (map, keyFunction) {
+function RayCaster (map) {
   if (!map) throw new Error(`Expected map, got undefined or null`)
   this.map = map
 
@@ -95,7 +95,10 @@ RayCaster.prototype.get = function (point, angle, range) {
 }
 
 RayCaster.prototype.dispose = function () {
-  throw new Error('not impl')
+  delete this.map
+  delete this.cache
+  delete this.origin
+  delete this.noWall
 }
 
 export default RayCaster

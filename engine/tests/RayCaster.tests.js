@@ -13,12 +13,6 @@ describe('Raycaster', function () {
       assert.isDefined(rc.cache)
       assert.equal(rc.map, map)
     })
-    it('can be created with an optional custom key function', function () {
-      const customKey = n => n * 1000
-      const map = mockMap()
-      const rc = new RayCaster(map, customKey)
-      assert.equal(rc.cache.keyFunction, customKey)
-    })
     it('throws if no map is provided', function () {
       assert.throws(function () {
         new RayCaster()
@@ -105,7 +99,14 @@ describe('Raycaster', function () {
   })
 
   describe('dispose', function () {
-    it('removes references to injected properties')
-    it('empties the cache')
+    it('removes references to injected properties', function () {
+      const map = mockMap(1)
+      const rc = new RayCaster(map)
+      rc.dispose()
+      assert.isUndefined(rc.map)
+      assert.isUndefined(rc.cache)
+      // does not however dispose the map data
+      assert.isDefined(map)
+    })
   })
 })
