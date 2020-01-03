@@ -96,6 +96,8 @@ RayCaster.prototype.get = function (point, angle, range) {
 
 RayCaster.prototype.dispose = function () {
   delete this.map
+
+  this.cache.dispose()
   delete this.cache
   delete this.origin
   delete this.noWall

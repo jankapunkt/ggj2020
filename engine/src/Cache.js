@@ -70,4 +70,14 @@ Cache.prototype.size = function () {
   return keys
 }
 
+Cache.prototype.dispose = function () {
+  Object.keys(this.map).forEach(key => {
+    delete this.map[key]
+  })
+  delete this.map
+  delete this.count
+  delete this.strict
+  delete this.keyFunction
+}
+
 export default Cache

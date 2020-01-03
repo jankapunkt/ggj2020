@@ -104,4 +104,31 @@ describe('Cache', function () {
       }, `Expected size of ${amount}, got ${amount - 1}`)
     })
   })
+
+  describe('dispose', function () {
+    it ('removes all references from the map', function () {
+      const cache = create({strict: false})
+      assert.equal(cache.size(), 0)
+      const amount = Math.round(Math.random() * 100)
+      let i
+      for (i = 0; i< amount; i++) {
+        cache.add(i, i)
+      }
+
+      const map = cache.map
+      for (i = 0; i< amount; i++) {
+        assert.equal(map[i], i)
+      }
+
+      cache.dispose()
+      for (i = 0; i< amount; i++) {
+        assert.isUndefined(map[i])
+      }
+
+      assert.isUndefined(cache.map)
+      assert.isUndefined(cache.count)
+      assert.isUndefined(cache.strict)
+      assert.isUndefined(cache.keyFunction)
+    })
+  })
 })
