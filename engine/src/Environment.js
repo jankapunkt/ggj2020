@@ -1,27 +1,42 @@
 import AudioPlayer from './AudioPlayer.js'
 
 const defaults = {
-  light: 0
+  light: 0,
+  thunder: {
+    volume: 0.5,
+    seed: 8
+  }
 }
 
-function Environment ({ light, sounds, textures } = 0) {
+function Environment ({ sky, wall, ground, light, rain, thunder, ambient } = 0) {
   this.light = light || defaults.light
+
+  this.rain = rain
+  this.thunder = thunder
+  this.ambient = ambient
+
+  const sounds = []
+  if (rain && rain.sound) sounds.push(rain.sound)
+  if (thunder && thunder.sound) sounds.push(thunder.sound)
+  if (ambient && ambient.sound) sounds.push(ambient.sound)
 
   this.sounds = new AudioPlayer()
   this.sounds.init(sounds)
 
   // textures
-  this.sky = textures.sky
-  this.wall = textures.wall
-  this.ground = textures.ground
+  this.sky = sky
+  this.wall = wall
+  this.ground = ground
 }
 
 Environment.prototype.update = function (seconds) {
-  if (this.light > 0) {
-    this.light = Math.max(this.light - 10 * seconds, 0)
-  } else if (Math.random() * 8 < seconds) {
-    this.sounds.play('thunder', { volume: 0.5 })
-    this.light = 2
+  if (this.thunder) {
+    if (this.light > 0) {
+      this.light = Math.max(this.light - 10 * seconds, 0)
+    } else if (Math.random() * (this.thunder.seed || defaults.thunder.seed) < seconds) {
+      this.sounds.play(this.thunder.sound.id, { volume: this.thunder.sound.value || defaults.thunder.volume })
+      this.light = 2
+    }
   }
 }
 

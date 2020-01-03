@@ -1,76 +1,69 @@
 <!doctype html>
 <html>
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-	<title>Raycast Engine Demo</title>
-	<style>
-		html, body {
-			overflow : hidden;
-		}
-		
-		
-		body {
-			background : #000000;
-			margin     : 0;
-			padding    : 0;
-			width      : 100%;
-			height     : 100%;
-			cursor     : pointer;
-		}
-		
-		
-		canvas {
-			position : absolute;
-		}
-		
-		
-		#display {
-			width   : 100%;
-			height  : 100%;
-			z-index : 2;
-		}
-		
-		
-		#status {
-			width   : 100%;
-			height  : 100%;
-			z-index : 3;
-		}
-		
-		
-		#minimap {
-			left    : 2%;
-			bottom  : 2%;
-			z-index : 4;
-		}
-		
-		
-		.info-ui {
-			font-weight : bold;
-			font-size   : 10px;
-			color       : #FFFFFF;
-			font-family : monospace;
-			position    : absolute;
-			top         : 2%;
-			left        : 2%;
-		}
-		
-		
-		.title-screen {
-			z-index     : 999;
-			position    : absolute;
-			width       : 100vw;
-			height      : 100vh;
-			display     : flex;
-			align-items : center;
-			text-align  : center;
-			font-family : monospace;
-			font-size   : 48px;
-			font-weight : bold;
-			color       : #FFFFFF;
-		}
-	</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Raycast Engine Demo</title>
+    <style>
+        html, body {
+            overflow: hidden;
+        }
+
+        body {
+            background: #000000;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        canvas {
+            position: absolute;
+        }
+
+        #display {
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+        }
+
+        #status {
+            width: 100%;
+            height: 100%;
+            z-index: 3;
+        }
+
+        #minimap {
+            left: 2%;
+            bottom: 2%;
+            z-index: 4;
+        }
+
+        .info-ui {
+            font-weight: bold;
+            font-size: 10px;
+            color: #FFFFFF;
+            font-family: monospace;
+            position: absolute;
+            top: 2%;
+            left: 2%;
+        }
+
+        .title-screen {
+            z-index: 999;
+            position: absolute;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            text-align: center;
+            font-family: monospace;
+            font-size: 48px;
+            font-weight: bold;
+            color: #FFFFFF;
+        }
+    </style>
 </head>
 <body>
 <div class="title-screen">YOU REGAINED YOUR CONSCIOUSNESS...</div>
@@ -78,10 +71,10 @@
 <canvas id='status' width='1' height='1'></canvas>
 <canvas id='minimap' width='1' height='1'></canvas>
 <div class="info-ui">
-	<div>
-		<span>FPS:</span>
-		<span class="fps-info">0</span>
-	</div>
+    <div>
+        <span>FPS:</span>
+        <span class="fps-info">0</span>
+    </div>
 </div>
 <script type="module" content="text/javascript">
   import engine from '../engine/src/index.js'
@@ -155,32 +148,40 @@
   }
 
   const envConfig = {
-    textures: {
-      sky: new Texture('assets/deathvalley_panorama.jpg', 2000, 750),
-      wall: [
+    sky: {
+      texture: new Texture('assets/deathvalley_panorama.jpg', 2000, 750)
+    },
+    wall: {
+      textures: [
         new Texture('assets/textures/wall2.jpg', 2048, 2048),
         new Texture('assets/textures/wall1.jpg', 2048, 2048),
-      ],
-      ground: new Texture('assets/textures/ground.jpg', 2048, 2048)
+      ]
     },
-    sounds: [ {
-      id: 'thunder',
-      url: 'assets/audio/thunder.ogg'
-    }, {
-      id: 'rain',
-      url: 'assets/audio/rain.ogg'
-    }, {
-      id: 'ambient',
-      url: 'assets/audio/ambient.mp3',
-      listeners: {
-        ended: () => {
-          // play ambient after 15 seconds
-          setTimeout(() => {
-            environment.sounds.play('ambient', { volume: 0.8, loop: false })
-          }, 15 * 1000)
+    ground: {
+      texture: new Texture('assets/textures/ground.jpg', 2048, 2048)
+    },
+    rain: {
+      amount: 1,
+      sound: { id: 'rain', url: 'assets/audio/rain.ogg' }
+    },
+    thunder: {
+      light: 2,
+      sound: { id: 'thunder', url: 'assets/audio/thunder.ogg' }
+    },
+    ambient: {
+      sound: {
+        id: 'ambient',
+        url: 'assets/audio/ambient.mp3',
+        listeners: {
+          ended: () => {
+            // play ambient after 15 seconds
+            setTimeout(() => {
+              environment.sounds.play('ambient', { volume: 0.8, loop: false })
+            }, 15 * 1000)
+          }
         }
       }
-    } ]
+    }
   }
 
   /**

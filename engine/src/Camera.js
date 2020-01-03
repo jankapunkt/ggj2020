@@ -76,8 +76,8 @@ Camera.prototype.render = function (player, environment, map, rayCaster) {
     return
   }
 
-  this.drawGround(player.direction, environment.ground, environment.light)
-  this.drawSky(player.direction, environment.sky, environment.light)
+  this.drawGround(player.direction, environment.ground.texture, environment.light)
+  this.drawSky(player.direction, environment.sky.texture, environment.light)
   this.drawColumns(player, environment, rayCaster)
 //  this.drawActors(player, environment, map)
   this.drawWeapon(player.weapon, player.paces)
@@ -155,7 +155,7 @@ Camera.prototype.drawColumn = function (column, ray, player, environment) {
     const step = ray[ s ]
 
     if (s === hit) {
-      const texture = environment.wall[ step.height - 1 ]
+      const texture = environment.wall.textures[ step.height - 1 ]
       let textureX = Math.floor(texture.width * step.offset)
 
       // TODO use height value from a height map
@@ -170,10 +170,10 @@ Camera.prototype.drawColumn = function (column, ray, player, environment) {
     }
 
     // TODO to environment
-    if (this.rainEnabled) {
+    if (environment.rain && !environment.rain.disabled) {
       ctx.fillStyle = '#ffffff'
       ctx.globalAlpha = 0.15
-      this.rainDrops = Math.pow(Math.random(), 100) * s
+      this.rainDrops = Math.pow(Math.random(), 100 - environment.rain.amount) * s
       this.rain = (this.rainDrops > 0) && this.project(0.1, angle, player.directionV, step.distance)
       while (--this.rainDrops > 0) {
         ctx.fillRect(left, Math.random() * this.rain.top, 1, this.rain.height)
