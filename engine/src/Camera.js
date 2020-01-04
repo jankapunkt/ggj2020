@@ -112,15 +112,17 @@ Camera.prototype.drawSky = function (player,  environment) {
   const texture = sky.texture
   const width = texture.width * (this.height / texture.height) * 2
   const left = (player.direction / Globals.CIRCLE) * -width
+  const height = (this.height / 2) - ((this.height / 2) * player.directionV)
+
 
   // begin draw
   this.ctx.save()
 
   // draw from buffer
   if (texture.canvas) {
-    texture.to(this.ctx, 0, 0, texture.width, texture.height, left, 0, width, this.height / 2)
+    texture.to(this.ctx, 0, 0, texture.width, texture.height, left, 0, width, height)
     if (left < width - this.width) {
-      texture.to(this.ctx, 0, 0, texture.width, texture.height, left + width, 0, width, this.height / 2)
+      texture.to(this.ctx, 0, 0, texture.width, texture.height, left + width, 0, width, height)
     }
   }
 
