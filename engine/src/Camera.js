@@ -26,7 +26,7 @@ function Camera ({ canvas, resolution, focalLength, canvasScale, range, isMobile
 
 Camera.prototype.update = function (states, player, actors, rayCaster) {
   if (states.map && !this.buffer) {
-    const offScreenBuffer = new CanvasBuffer({ width: window.innerWidth, height: window.innerHeight })
+    const offScreenBuffer = new CanvasBuffer({ width: this.width, height: this.height })
     offScreenBuffer.pre(function (ctx) {
       ctx.filter = 'blur(3px)'
     })
