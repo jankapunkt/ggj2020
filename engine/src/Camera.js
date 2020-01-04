@@ -19,6 +19,7 @@ function Camera ({ canvas, resolution, focalLength, canvasScale, range, isMobile
   this.rainEnabled = true
 
   // caches
+  this.key = undefined
   this.rayCache = new Cache()
   this.projectionCache = {}
 }
@@ -42,8 +43,14 @@ Camera.prototype.update = function (states, player, actors, rayCaster) {
 
   // cast rays only if player moves, otherwise
   // we just use the rays from the last cast because there
-  // is nothing new to be drawn on the screen
-  this.key = player.x.toString() + player.y.toString() + player.direction.toString()
+  // is nothing new to be calculated
+  const key = player.x.toString() + player.y.toString() + player.direction.toString()
+  if (this.key === key) {
+    return
+  } else {
+    this.key = key
+  }
+
   const cachedRays = this.rayCache.get(this.key)
   if (!cachedRays) { //this.rays.length < this.resolution || player.isRotating || player.isMoving) {
     const rays = []
@@ -64,7 +71,9 @@ Camera.prototype.update = function (states, player, actors, rayCaster) {
   // TODO which will then be used to draw them in render
 }
 
-Camera.prototype.drawFromBuffer = function () { this.buffer.to(this.ctx) }
+Camera.prototype.drawFromBuffer = function () {
+  this.buffer.to(this.ctx, 0, 0, this.buffer.width, this.buffer.height, 0, 0, this.width, this.height)
+}
 
 Camera.prototype.render = function (player, environment, map, rayCaster) {
   // use buffered image for example when
@@ -73,7 +82,6 @@ Camera.prototype.render = function (player, environment, map, rayCaster) {
     this.drawFromBuffer()
     return
   }
-
   this.drawGround(player, environment)
   this.drawSky(player, environment)
   this.drawColumns(player, environment, rayCaster)
@@ -87,7 +95,7 @@ Camera.prototype.drawGround = function (player, environment) {
   const left = (player.direction / Globals.CIRCLE) * -width
 
   this.ctx.save()
-  this.ctx.fillStyle = '#FF00FF'//'#030100'
+  this.ctx.fillStyle = '#000000'//'#030100'
   this.ctx.fillRect(left, 0, width, this.height)
 
   // this.ctx.drawImage(ground.image, left, this.height / 2, width, this.height)
@@ -113,7 +121,6 @@ Camera.prototype.drawSky = function (player,  environment) {
   const width = texture.width * (this.height / texture.height) * 2
   const left = (player.direction / Globals.CIRCLE) * -width
   const height = (this.height / 2) - ((this.height / 2) * player.directionV)
-
 
   // begin draw
   this.ctx.save()
@@ -157,9 +164,9 @@ Camera.prototype.drawColumns = function (player, environment) {
   this.ctx.restore()
 }
 
-Camera.prototype.drawColumn = function (column, ray, player, environment) {
+Camera.prototype.drawColumn = function (columnIndex, ray, player, environment) {
   const ctx = this.ctx
-  const left = Math.floor(column * this.spacing)
+  const left = Math.floor(columnIndex * this.spacing)
   const width = Math.ceil(this.spacing)
   const angle = ray.angle
   let hit = -1
