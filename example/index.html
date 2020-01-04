@@ -306,7 +306,7 @@
       // renders
       camera.render(player, environment, map, rayCaster)
       statusScreen.render()
-      miniMap.render()
+      miniMap.render(camera.rayCache)
     }
 
     loop.start(frame)

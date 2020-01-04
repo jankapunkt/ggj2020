@@ -8,28 +8,35 @@ function Minimap ({ canvas, map, scale, background, wallColor, actorColor }) {
   this.bg = background || '#FFFFFF'
   this.wallColor = wallColor || '#A4A4A4'
   this.actorColor = actorColor || '#4A4A4A'
+  this.key = ''
   this.debug = false
 }
 
-Minimap.prototype.update = function (state, player) {
+Minimap.prototype.update = function (state, player, rayCaster) {
   if (state.map) {
     this.drawActive = true
     this.x = player.x
     this.y = player.y
     this.direction = player.direction
+    this.key = player.x.toString() + player.y.toString() + player.direction.toString()
   }
+
   if (!state.map && this.drawActive) {
     this.drawActive = false
-    const ctx = this.ctx
-    const map = this.map
-    const mapWidth = map.width
-    const mapHeight = map.height
-    const scale = this.scale
-    ctx.clearRect(0, 0, mapWidth * scale, mapHeight * scale)
+    this.clear()
   }
 }
 
-Minimap.prototype.render = function () {
+Minimap.prototype.clear = function () {
+  const ctx = this.ctx
+  const map = this.map
+  const mapWidth = map.width
+  const mapHeight = map.height
+  const scale = this.scale
+  ctx.clearRect(0, 0, mapWidth * scale, mapHeight * scale)
+}
+
+Minimap.prototype.render = function (rayCache) {
   if (!this.drawActive) return
 
   const ctx = this.ctx
@@ -60,12 +67,38 @@ Minimap.prototype.render = function () {
   ctx.fillRect(this.x * scale - 2, this.y * scale - 2, 4, 4)
 
   // player direction
-  ctx.beginPath()
-  ctx.strokeStyle = this.actorColor
-  ctx.moveTo(this.x * scale, this.y * scale)
-  ctx.lineTo((this.x + Math.cos(this.direction) * 4) * scale, (this.y + Math.sin(this.direction) * 4) * scale)
-  ctx.closePath()
-  ctx.stroke()
+  // ctx.beginPath()
+  // ctx.strokeStyle = this.actorColor
+  // ctx.moveTo(this.x * scale, this.y * scale)
+  // ctx.lineTo((this.x + Math.cos(this.direction) * 4) * scale, (this.y + Math.sin(this.direction) * 4) * scale)
+  // ctx.closePath()
+  // ctx.stroke()
+
+  // rays casted
+  const rays = rayCache && rayCache.get(this.key)
+  if (rays) {
+    let len = rays.length
+    let i
+    let k
+    let ray
+    let step
+    let hit
+    for (i = 0; i < rays.length; i++) {
+      if (i % 10 !== 0) continue
+      ray = rays[ i ]
+      for (k = 0; k < ray.length; k++) {
+        step = ray[ k ]
+        if (step.height !== 1) continue
+        ctx.beginPath()
+        ctx.strokeStyle = this.actorColor
+        ctx.moveTo(this.x * scale, this.y * scale)
+        ctx.lineTo((step.x) * scale, (step.y) * scale)
+        ctx.closePath()
+        ctx.stroke()
+        break
+      }
+    }
+  }
 
   ctx.fillStyle = this.bg
 }
