@@ -12,18 +12,16 @@ const defaults = {
  * @constructor
  */
 
-function Cache ({ keyFunction, strict, limit, owner } = {}) {
+function Cache ({ keyFunction, strict, limit } = {}) {
   this.map = {}
   this.count = 0
   this.strict = strict || defaults.strict
   this.keyFunction = keyFunction || defaults.keyFunction
   this.limit = limit || defaults.limit
-  this.owner = owner
 }
 
 /**
  * Gets a key by applying arguments to a given key function.
- * 
  */
 
 Cache.prototype.key = function (args) {
@@ -32,9 +30,9 @@ Cache.prototype.key = function (args) {
 
 /**
  * Adds a value to the cache. All following arguments are used by the key function
- * to determine the caching key.
+ * to determine the caching key. If this operation exceeds the cache limit, the cache is cleared.
  * @param value the value to be stored
- * @param args arguments to by used by the key function to generate a key
+ * @param key the String to use as a store key
  * @throws if strict an error is thrown when a value exists for the generated key
  */
 
@@ -44,37 +42,35 @@ Cache.prototype.add = function (value, key) {
   if (this.strict && keyExists) {
     throw new Error(`Expected no value to be present for key <${key}>`)
   }
-  
-  this.map[ key ] = value
-  if (!keyExists) {
-    this.count++
-  }
 
   // delete the first occurrence in the map
   // that is not our new added key if limit
   // is exceeded by our current size
-  if (this.count >= this.limit) {
-    for (const deleteKey in this.map) {
-      if (deleteKey !== key) {
-        delete this.map[deleteKey]
-        this.count--
-      }
-    }
+  if (this.count === this.limit) {
+    this.clear()
+  }
+
+  this.map[ key ] = value
+  if (!keyExists) {
+    this.count++
   }
 }
 
 /**
- * Returns a value by given arguments, if the generated key using the arguments fits a value in the map.
- * @param args
+ * Returns a value by given key or undefined if none found.
+ * @param key The key to access the items
  * @returns {*}
- * @throws in strict mode it throws an error if the object keys are not the same size of the size counter.
  */
 
 Cache.prototype.get = function (key) {
-//  const key = this.key(args)
   return this.map[ key ]
 }
 
+/**
+ * Returns the size of the cache as integer
+ * @return {number}
+ * @throws strict mode only: if the internal counter if unequal to the number of items in the map an error is thrown.
+ */
 Cache.prototype.size = function () {
   if (!this.strict) {
     return this.count
@@ -87,10 +83,21 @@ Cache.prototype.size = function () {
   return keys
 }
 
+/**
+ * Clears the cache and resets the counter.
+ */
+Cache.prototype.clear = function () {
+  for (const key in this.map) {
+    delete this.map[ key ]
+  }
+  this.count = 0
+}
+
+/**
+ * Clears the cache and removes all references.
+ */
 Cache.prototype.dispose = function () {
-  Object.keys(this.map).forEach(key => {
-    delete this.map[key]
-  })
+  this.clear()
   delete this.map
   delete this.count
   delete this.strict
