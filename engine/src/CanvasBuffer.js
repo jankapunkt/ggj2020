@@ -10,6 +10,8 @@ function CanvasBuffer ({ alpha = true, width, height } = {}) {
   this.canvas = document.createElement('canvas')
   this.canvas.width = width
   this.canvas.height = height
+  this.width = width
+  this.height = height
   this.ctx = this.canvas.getContext('2d', { alpha })
 }
 
@@ -47,8 +49,8 @@ CanvasBuffer.prototype.from = function (onScreenCanvas) {
  * @param onScreenContext
  */
 
-CanvasBuffer.prototype.to = function (onScreenContext) {
-  onScreenContext.drawImage(this.canvas, 0, 0)
+CanvasBuffer.prototype.to = function (onScreenContext, sx, sy, sw, sh, dx, dy, dw, dh) {
+  onScreenContext.drawImage(this.canvas, sx, sy, sw, sh, dx, dy, dw, dh)
 }
 
 export default CanvasBuffer

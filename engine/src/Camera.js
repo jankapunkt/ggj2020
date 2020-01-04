@@ -106,29 +106,43 @@ Camera.prototype.drawGround = function (player, environment) {
 }
 
 Camera.prototype.drawSky = function (player,  environment) {
-  const sky = environment.sky.texture
-  if (!sky || !sky.loaded) return
+  const sky = environment.sky
+  if (!sky || !sky.texture) return
 
-  const width = sky.width * (this.height / sky.height) * 2
+  const texture = sky.texture
+  const width = texture.width * (this.height / texture.height) * 2
   const left = (player.direction / Globals.CIRCLE) * -width
 
+  // begin draw
   this.ctx.save()
 
-  // draw sky texture only as a half of the image to support
-  // a natural sky feeling when player is looking vertically
-  const v = -player.directionV * sky.height
-  this.ctx.drawImage(sky.image, 0, v, sky.width, sky.height, left, 0, width, this.height / 2)
-
-  // allow seamless image in 360 degree rotation
-  if (left < width - this.width) {
-    this.ctx.drawImage(sky.image, 0, 0, sky.width, sky.height / 2, left + width, 0, width, this.height / 2)
+  // draw from buffer
+  if (texture.canvas) {
+    texture.to(this.ctx, 0, 0, texture.width, texture.height, left, 0, width, this.height / 2)
+    if (left < width - this.width) {
+      texture.to(this.ctx, 0, 0, texture.width, texture.height, left + width, 0, width, this.height / 2)
+    }
   }
+
+  // draw from image
+  if (texture.image) {
+    this.ctx.drawImage(texture.image, 0, 0, texture.width, texture.height, left, 0, width, this.height / 2)
+    if (left < width - this.width) {
+      this.ctx.drawImage(texture.image, 0, 0, texture.width, texture.height, left + width, 0, width, this.height / 2)
+    }
+  }
+
+  // optional light effects
   if (environment.light > 0) {
     this.ctx.fillStyle = '#ffffff'
     this.ctx.globalAlpha = environment.light * 0.1
     this.ctx.fillRect(0, this.height * 0.5, this.width, this.height * 0.5)
   }
+
+  // end draw
   this.ctx.restore()
+
+
 }
 
 Camera.prototype.drawColumns = function (player, environment) {

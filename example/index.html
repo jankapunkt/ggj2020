@@ -89,6 +89,7 @@
   const GameLoop = engine.GameLoop
   const Texture = engine.Texture
   const RayCaster = engine.RayCaster
+  const CanvasBuffer = engine.CanvasBuffer
 
   /**
    * ---------------------------------------------------------
@@ -146,9 +147,37 @@
     height: 32
   }
 
+  function getRandom (min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min
+  }
+
+  const skyBuffer = new CanvasBuffer({ width: window.innerWidth, height: window.innerHeight, alpha: false })
+  skyBuffer.pre(context => {
+    context.fillStyle = '#00010a'
+    context.fillRect(0, 0, window.innerWidth, window.innerHeight)
+
+    const stars = 2500
+    const colorrange = [ 0, 60, 240 ]
+    let y
+    let radius
+    let hue
+    let sat
+    for (let i = 0; i < stars; i++) {
+      let x = Math.random() * window.innerWidth
+      y = Math.random() * window.innerHeight
+      radius = Math.random() * 1.2
+      hue = colorrange[ getRandom(0, colorrange.length - 1) ]
+      sat = getRandom(50, 100)
+      context.beginPath()
+      context.arc(x, y, radius, 0, 360)
+      context.fillStyle = 'hsl(' + hue + ', ' + sat + '%, 88%)'
+      context.fill()
+    }
+  })
+
   const envConfig = {
     sky: {
-      texture: new Texture('assets/textures/citybg.jpg', 4096, 1024)
+      texture: skyBuffer
     },
     wall: {
       textures: [
