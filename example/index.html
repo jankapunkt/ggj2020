@@ -151,10 +151,10 @@
     return Math.floor(Math.random() * (max - min + 1)) + min
   }
 
-  const skyBuffer = new CanvasBuffer({ width: window.innerWidth, height: window.innerHeight, alpha: false })
+  const skyBuffer = new CanvasBuffer({ width: window.innerWidth * 2, height: window.innerHeight * 2, alpha: false })
   skyBuffer.pre(context => {
     context.fillStyle = '#00010a'
-    context.fillRect(0, 0, window.innerWidth, window.innerHeight)
+    context.fillRect(0, 0, window.innerWidth * 2, window.innerHeight * 2)
 
     const stars = 2500
     const colorrange = [ 0, 60, 240 ]
@@ -163,8 +163,8 @@
     let hue
     let sat
     for (let i = 0; i < stars; i++) {
-      let x = Math.random() * window.innerWidth
-      y = Math.random() * window.innerHeight
+      let x = Math.random() * window.innerWidth * 2
+      y = Math.random() * window.innerHeight * 2
       radius = Math.random() * 1.2
       hue = colorrange[ getRandom(0, colorrange.length - 1) ]
       sat = getRandom(50, 100)
