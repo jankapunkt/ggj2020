@@ -170,6 +170,9 @@ Camera.prototype.drawColumn = function (columnIndex, ray, player, environment) {
   const width = Math.ceil(this.spacing)
   const angle = ray.angle
   let hit = -1
+  let projection
+  let step
+  let alpha
 
   // scanning the current ray by checking if this hit
   // is not facing a wall (where ray.height > 0)
@@ -177,21 +180,39 @@ Camera.prototype.drawColumn = function (columnIndex, ray, player, environment) {
 
   // draw single ray
   for (let s = ray.length - 1; s >= 0; s--) {
-    const step = ray[ s ]
+    step = ray[ s ]
+    projection = this.project(1, angle, player.directionV, step.distance)
+    alpha = Math.max((step.distance + step.shading) / environment.ambient.light - environment.light, 0)
+
+    if (s <= hit) {
+      const ground = environment.ground.texture
+      let groundX = Math.floor(ground.width * step.offset)
+
+      ctx.globalAlpha = 1
+      ctx.drawImage(ground.image, groundX, 0, 1, ground.height, left, projection.bottom, width, projection.height)
+
+      ctx.fillStyle = '#000000'
+      ctx.globalAlpha = Math.max((step.distance) / environment.ambient.light - environment.light, 0)
+
+      // uncomment to apply weird 3D trap effect
+      // ctx.fillRect(left, projection.bottom, width, projection.height)
+
+      ctx.fillRect( left, projection.bottom, width, projection.height)
+    }
 
     if (s === hit) {
       const texture = environment.wall.textures[ step.height - 1 ]
       let textureX = Math.floor(texture.width * step.offset)
 
-      // TODO use height value from a height map
-      let wall = this.project(1, angle, player.directionV, step.distance)
-
       ctx.globalAlpha = 1
-      ctx.drawImage(texture.image, textureX, 0, 1, texture.height, left, wall.top, width, wall.height)
+      ctx.drawImage(texture.image, textureX, 0, 1, texture.height, left, projection.top, width, projection.height)
 
+      // applying ambient light
+      // to the textures as semi-transparent layer
+      // on top of the texture images
       ctx.fillStyle = '#000000'
-      ctx.globalAlpha = Math.max((step.distance + step.shading) / environment.ambient.light - environment.light, 0)
-      ctx.fillRect(left, wall.top, width, wall.height)
+      ctx.globalAlpha = alpha
+      ctx.fillRect(left, projection.top, width, projection.height)
     }
 
     // draw rain from environment for this column
@@ -238,6 +259,7 @@ Camera.prototype.project = function (height, angleH, angleV, distance) {
   const wallHeight = this.height * height / z
   const bottom = this.height / 2 * ((1  - angleV )+ 1 / z)
   this.projectionCache.top = bottom - wallHeight
+  this.projectionCache.bottom = bottom
   this.projectionCache.height = wallHeight
   return this.projectionCache
 }
