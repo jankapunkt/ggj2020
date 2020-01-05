@@ -11,6 +11,8 @@ const defaults = {
   keyFunction: (x, y, angle, range) => `${x};${y};${angle};${range}`
 }
 
+class Ray extends Array {}
+
 function RayCaster (map) {
   if (!map) throw new Error(`Expected map, got undefined or null`)
   this.map = map
@@ -18,7 +20,7 @@ function RayCaster (map) {
   // caches
   this.cache = new Cache({strict: true})
   this.origin = { height: 0, distance: 0 }
-  this.noWall = { length2: Infinity }
+  this.noWall = () => ({ length2: Infinity })
 }
 
 RayCaster.prototype.inspect = function (sin, cos, step, shiftX, shiftY, distance, offset) {
@@ -38,7 +40,7 @@ RayCaster.prototype.inspect = function (sin, cos, step, shiftX, shiftY, distance
 RayCaster.prototype.step = function step (rise, run, x, y, inverted) {
   // no wall detectable
   if (run === 0) {
-    return this.noWall
+    return this.noWall()
   }
 
   const dx = run > 0
@@ -77,7 +79,7 @@ RayCaster.prototype.cast = function (point, angle, range) {
   const cos = Math.cos(angle)
   this.origin.x = point.x
   this.origin.y = point.y
-  const list = []
+  const list = new Ray()
   return self.ray(list, this.origin, range, sin, cos)
 }
 

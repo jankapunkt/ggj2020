@@ -2,12 +2,15 @@ function GameLoop ({ fpsHandler } = {}) {
   this.frame = this.frame.bind(this)
   this.lastTime = 0
   this.fpsRatio = 60 / 1000
-  this.callback = function () {}
+  this.updateCallback = () => {}
+  this.renderCallback = () => {}
   this.fpsHandler = fpsHandler
+  this.update = true
 }
 
-GameLoop.prototype.start = function (callback) {
-  this.callback = callback
+GameLoop.prototype.start = function (updateCallback, renderCallback) {
+  this.updateCallback = updateCallback
+  this.renderCallback = renderCallback
   window.requestAnimationFrame(this.frame)
 }
 
@@ -23,14 +26,11 @@ GameLoop.prototype.frame = function (time) {
   const seconds = (time - this.lastTime) / 1000
   this.lastTime = time
 
-  if (this.fpsHandler) {
-    this.fpsHandler((1000 - seconds) * this.fpsRatio)
-  }
-
   if (seconds < 0.2) {
-    this.callback(seconds)
+    this.updateCallback(seconds)
+    this.renderCallback(seconds)
   } else {
-    console.log('skip', seconds)
+    console.log('skip render', seconds)
   }
 
   if (!this.stopped) {

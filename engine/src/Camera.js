@@ -193,13 +193,13 @@ Camera.prototype.drawColumn = function (columnIndex, ray, player, environment) {
         ctx.drawImage(ground.image, groundX, 0, 1, ground.height, left, projection.bottom, width, projection.height)
 
         ctx.fillStyle = '#000000'
-        ctx.globalAlpha = Math.max((step.distance) / environment.ambient.light - environment.light, 0)
+        ctx.globalAlpha = alpha
         ctx.fillRect( left, projection.bottom, width, projection.height)
       } else {
         // otherwise we draw by a given color and some alpha so we create
         // some sense of a ground here and avoid the color to be just blank
         ctx.fillStyle = (environment.ground && environment.ground.color) || '#000000'
-        ctx.globalAlpha = Math.max((step.distance) / environment.ambient.light - environment.light, 0)
+        ctx.globalAlpha = alpha
         ctx.fillRect(left, projection.bottom, width, projection.height)
       }
     }

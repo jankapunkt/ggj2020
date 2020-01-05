@@ -301,24 +301,27 @@
 
     const actors = []
 
-    function frame (seconds) {
-      // updates
+    function update (seconds) {
+      // environment updates
       environment.update(seconds)
+
+      // actors updates
       player.update(controls.states, map, seconds)
       actors.forEach(actor => actor.update({}, map, seconds))
       camera.update(controls.states, player, actors, rayCaster, seconds)
 
-      // ui
+      // ui updates
       statusScreen.update(controls.states, seconds)
       miniMap.update(controls.states, player, seconds)
+    }
 
-      // renders
+    function render () {
       camera.render(player, environment, map, rayCaster)
       statusScreen.render()
       miniMap.render(camera.rayCache)
     }
 
-    loop.start(frame)
+    loop.start(update, render)
   })
 
 </script>

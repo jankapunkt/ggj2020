@@ -7,7 +7,7 @@ const defaultCodes = {
   'shift': 'run'
 }
 const defaultMouse = {
-  sensitivity:50
+  sensitivity: 50
 }
 
 function Controls (codes, mouseSensitivity) {
