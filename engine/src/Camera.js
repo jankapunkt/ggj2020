@@ -184,7 +184,7 @@ Camera.prototype.drawColumn = function (columnIndex, ray, player, environment) {
     // point where the ray has made a hit to the wall
     if (s <= hit) {
       const ground = environment.ground && environment.ground.texture
-      if (ground) {
+      if (ground && ground.loaded) {
         // if we have a ground texture defined in our environment,
         // we draw it in the same way as we do with our wall textures
         groundX = Math.floor(ground.width * step.offset)
@@ -207,7 +207,7 @@ Camera.prototype.drawColumn = function (columnIndex, ray, player, environment) {
     if (s === hit) {
       const texture = environment.wall && environment.wall.textures && environment.wall.textures[ step.height - 1 ]
 
-      if (texture) {
+      if (texture && texture.loaded) {
         let textureX = Math.floor(texture.width * step.offset)
         ctx.globalAlpha = 1
         ctx.drawImage(texture.image, textureX, 0, 1, texture.height * wallHeight, left, projection.top, width, projection.height)
