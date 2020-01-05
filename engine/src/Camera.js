@@ -83,11 +83,10 @@ Camera.prototype.render = function (player, environment, map, rayCaster) {
     return
   }
   this.clearBackground()
-  // this.drawGround(player, environment)
   this.drawSky(player, environment)
   this.drawColumns(player, environment, rayCaster)
 //  this.drawActors(player, environment, map)
-  this.drawWeapon(player.weapon, player.paces)
+  // this.drawWeapon(player.weapon, player.paces)
 }
 
 Camera.prototype.clearBackground = function () {
@@ -100,30 +99,6 @@ Camera.prototype.clearBackground = function () {
 
 // Restore the transform
   this.ctx.restore();
-}
-
-Camera.prototype.drawGround = function (player, environment) {
-  const ground = environment.ground.texture
-  const width = ground.width * (this.height / ground.height) * 2
-  const left = (player.direction / Globals.CIRCLE) * -width
-
-  this.ctx.save()
-  this.ctx.fillStyle = '#000000'//'#030100'
-  this.ctx.fillRect(left, 0, width, this.height)
-
-  // this.ctx.drawImage(ground.image, left, this.height / 2, width, this.height)
-
-  if (left < width - this.width) {
-    // this.ctx.drawImage(ground.image, left + width, this.height / 2, width, this.height)
-    this.ctx.fillRect(left + width, 0, width, this.height)
-  }
-
-  if (environment.light > 0) {
-    this.ctx.fillStyle = '#ffffff'
-    this.ctx.globalAlpha = environment.light * 0.1
-    this.ctx.fillRect(0, this.height * 0.5, this.width, this.height * 0.5)
-  }
-  this.ctx.restore()
 }
 
 Camera.prototype.drawSky = function (player,  environment) {
@@ -188,6 +163,8 @@ Camera.prototype.drawColumn = function (columnIndex, ray, player, environment) {
   let alpha
   let groundX
 
+  const wallHeight = 1 // TODO load from height map
+
   // scanning the current ray by checking if this hit
   // is not facing a wall (where ray.height > 0)
   while (++hit < ray.length && ray[ hit ].height <= 0) {}
@@ -195,7 +172,7 @@ Camera.prototype.drawColumn = function (columnIndex, ray, player, environment) {
   // draw single ray
   for (let s = ray.length - 1; s >= 0; s--) {
     step = ray[ s ]
-    projection = this.project(1, angle, player.directionV, step.distance)
+    projection = this.project(wallHeight, angle, player.directionV, step.distance)
     alpha = Math.max((step.distance + step.shading) / environment.ambient.light - environment.light, 0)
 
     // TODO draw ceiling if defined in environment
@@ -228,11 +205,17 @@ Camera.prototype.drawColumn = function (columnIndex, ray, player, environment) {
     }
 
     if (s === hit) {
-      const texture = environment.wall.textures[ step.height - 1 ]
-      let textureX = Math.floor(texture.width * step.offset)
+      const texture = environment.wall && environment.wall.textures && environment.wall.textures[ step.height - 1 ]
 
-      ctx.globalAlpha = 1
-      ctx.drawImage(texture.image, textureX, 0, 1, texture.height, left, projection.top, width, projection.height)
+      if (texture) {
+        let textureX = Math.floor(texture.width * step.offset)
+        ctx.globalAlpha = 1
+        ctx.drawImage(texture.image, textureX, 0, 1, texture.height * wallHeight, left, projection.top, width, projection.height)
+      } else {
+        ctx.fillStyle = (environment.wall && environment.wall.color) || '#000000'
+        ctx.globalAlpha = 1
+        ctx.fillRect(left, projection.top, width, projection.height)
+      }
 
       // applying ambient light
       // to the textures as semi-transparent layer
