@@ -82,11 +82,24 @@ Camera.prototype.render = function (player, environment, map, rayCaster) {
     this.drawFromBuffer()
     return
   }
-  this.drawGround(player, environment)
+  this.clearBackground()
+  // this.drawGround(player, environment)
   this.drawSky(player, environment)
   this.drawColumns(player, environment, rayCaster)
 //  this.drawActors(player, environment, map)
   this.drawWeapon(player.weapon, player.paces)
+}
+
+Camera.prototype.clearBackground = function () {
+  // Store the current transformation matrix
+  this.ctx.save();
+
+// Use the identity matrix while clearing the canvas
+  this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+  this.ctx.clearRect(0, 0, this.width, this.height);
+
+// Restore the transform
+  this.ctx.restore();
 }
 
 Camera.prototype.drawGround = function (player, environment) {
@@ -173,6 +186,7 @@ Camera.prototype.drawColumn = function (columnIndex, ray, player, environment) {
   let projection
   let step
   let alpha
+  let groundX
 
   // scanning the current ray by checking if this hit
   // is not facing a wall (where ray.height > 0)
@@ -184,20 +198,33 @@ Camera.prototype.drawColumn = function (columnIndex, ray, player, environment) {
     projection = this.project(1, angle, player.directionV, step.distance)
     alpha = Math.max((step.distance + step.shading) / environment.ambient.light - environment.light, 0)
 
+    // TODO draw ceiling if defined in environment
+    // if (s > hit) {
+    //
+    // }
+
+    // we draw the ground from the most bottom step up to the
+    // point where the ray has made a hit to the wall
     if (s <= hit) {
-      const ground = environment.ground.texture
-      let groundX = Math.floor(ground.width * step.offset)
+      const ground = environment.ground && environment.ground.texture
+      if (ground) {
+        // if we have a ground texture defined in our environment,
+        // we draw it in the same way as we do with our wall textures
+        groundX = Math.floor(ground.width * step.offset)
 
-      ctx.globalAlpha = 1
-      ctx.drawImage(ground.image, groundX, 0, 1, ground.height, left, projection.bottom, width, projection.height)
+        ctx.globalAlpha = 1
+        ctx.drawImage(ground.image, groundX, 0, 1, ground.height, left, projection.bottom, width, projection.height)
 
-      ctx.fillStyle = '#000000'
-      ctx.globalAlpha = Math.max((step.distance) / environment.ambient.light - environment.light, 0)
-
-      // uncomment to apply weird 3D trap effect
-      // ctx.fillRect(left, projection.bottom, width, projection.height)
-
-      ctx.fillRect( left, projection.bottom, width, projection.height)
+        ctx.fillStyle = '#000000'
+        ctx.globalAlpha = Math.max((step.distance) / environment.ambient.light - environment.light, 0)
+        ctx.fillRect( left, projection.bottom, width, projection.height)
+      } else {
+        // otherwise we draw by a given color and some alpha so we create
+        // some sense of a ground here and avoid the color to be just blank
+        ctx.fillStyle = (environment.ground && environment.ground.color) || '#000000'
+        ctx.globalAlpha = Math.max((step.distance) / environment.ambient.light - environment.light, 0)
+        ctx.fillRect(left, projection.bottom, width, projection.height)
+      }
     }
 
     if (s === hit) {

@@ -186,7 +186,8 @@
       ]
     },
     ground: {
-      texture: new Texture('assets/textures/ground.jpg', 2048, 2048)
+      texture: new Texture('assets/textures/ground.jpg', 2048, 2048),
+      color: '#0000FF'
     },
     rain: {
       amount: 1,
@@ -239,6 +240,7 @@
 
   const map = new Map(mapConfig)
   map.randomize()
+
 
   const rayCaster = new RayCaster(map)
 
