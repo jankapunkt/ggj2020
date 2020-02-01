@@ -3,10 +3,6 @@
  * CONFIGURATIONS
  * ---------------------------------------------------------
  */
-import { getRandom } from '../../api/utils/utils'
-import engine from 'raycaster2'
-
-const CanvasBuffer = engine.CanvasBuffer
 
 export const cam1990 = display => ({
   canvas: display,
@@ -31,14 +27,17 @@ export const playerConfig = {
   y: -1.2,
   health: 100,
   direction: Math.PI * 0.3,
-  defaultSpeed: 1.8,
-  runFactor: 1.8,
+  defaultSpeed: 2.5,
+  runFactor: 2.8,
   sounds: [ {
     id: 'walk',
-    url: 'assets/audio/steps.mp3'
+    url: '/assets/audio/steps.mp3'
   }, {
     id: 'run',
-    url: 'assets/audio/steps_run.ogg'
+    url: '/assets/audio/steps_run.ogg'
+  }, {
+    id: 'paint',
+    url: '/assets/audio/magic.mp3'
   } ]
 }
 

@@ -1,7 +1,7 @@
 import engine from 'raycaster2'
 import {getRandom} from '../../api/utils/utils'
 import { Game } from '../../api/game/Game'
-
+const AudioPlayer = engine.AudioPlayer
 const Status = engine.Status
 const Player = engine.Player
 const Controls = engine.Controls
@@ -140,25 +140,18 @@ class GameHandler {
       },
       rain: {
         amount: 1,
-        sound: { id: 'rain', url: 'assets/audio/rain.ogg' }
+        sound: { id: 'rain', url: '/assets/audio/rain.ogg', volume: 0.5 }
       },
       thunder: {
         light: 2,
-        sound: { id: 'thunder', url: 'assets/audio/thunder.ogg' }
+        sound: { id: 'thunder', url: '/assets/audio/thunder.ogg' }
       },
       ambient: {
         light: 5,
         sound: {
           id: 'ambient',
-          url: 'assets/audio/ambient.mp3',
-          listeners: {
-            ended: () => {
-              // play ambient after 15 seconds
-              setTimeout(() => {
-                game.environment.sounds.play('ambient', { volume: 0.8, loop: false })
-              }, 15 * 1000)
-            }
-          }
+          url: '/assets/audio/ambient.mp3',
+          loop: true
         }
       }
     }
@@ -203,7 +196,8 @@ class GameHandler {
 
     window.document.addEventListener('keydown', function (event) {
       if (event.code !== 'Space') return
-      prompt('type in your solution', '')
+      const word = prompt('type in your solution', '')
+      if (!word) display.requestPointerLock()
     })
   }
 
@@ -219,12 +213,8 @@ class GameHandler {
     display.requestPointerLock()
 
     // play rain immediately
-    game.environment.sounds.play('rain', { volume: 0.8, loop: true })
-
-    // play ambient after 15 seconds
-    setTimeout(() => {
-      game.environment.sounds.play('ambient', { volume: 0.8, loop: false })
-    }, 15 * 1000)
+    game.environment.sounds.play('rain', { volume: 0.6, loop: true })
+    game.environment.sounds.play('ambient', { volume: 0.8, loop: true })
 
     const actors = []
     const environment = game.environment
@@ -236,8 +226,8 @@ class GameHandler {
     const rayCaster = new RayCaster(map)
     const loop = this.gameLoop
     const miniMap = this.minimap
-
     const maxdist = 4
+
     display.addEventListener('click', function () {
       const x = player.x
       const y = player.y
@@ -260,7 +250,13 @@ class GameHandler {
       const value = Math.floor(Math.random() * environment.wall.textures.length) + 1
       game.map.set(dx, dy, value)
       Meteor.call(Game.methods.updateWall.name, { _id, index, value }, (err) => {
-        if (err) console.error(err)
+        if (err) {
+          console.error(err)
+          game.map.set(dx, dy, found) // reset to old value
+          return
+        }
+        player.sounds.stop('paint')
+        player.sounds.play('paint', { volume: 0.8 })
       })
     })
 
