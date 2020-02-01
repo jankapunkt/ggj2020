@@ -208,8 +208,14 @@ class GameHandler {
       if (isNum(event.code)) {
         console.log(event.code)
       }else if (event.code === 'Space') {
-        const word = prompt('type in your solution', '')
-        if (!word) display.requestPointerLock()
+        const answer = prompt('type in your solution', '')
+        display.requestPointerLock()
+        if (!answer) return
+
+        const _id = game.id
+        Meteor.call(Game.methods.complete.name, { _id, answer }, (err, res) => {
+          console.log(err, res)
+        })
       }
     })
   }
@@ -238,10 +244,14 @@ class GameHandler {
     const player = game.player
     const controls = this.controls
     const statusScreen = game.statusScreen
-    const rayCaster = new RayCaster(map)
+
     const loop = this.gameLoop
     const miniMap = this.minimap
     const maxdist = 4
+
+    const rayCaster = new RayCaster(map)
+    this.rayCaster = rayCaster
+
 
     display.addEventListener('click', function () {
       console.log('click')
@@ -404,6 +414,11 @@ class GameHandler {
   }
 
   dispose () {
+    this.gameLoop.stop()
+    this.environment.dispose()
+    this.map.dispose()
+    this.camera.dispose()
+    this.rayCaster.dispose()
     clearInterval(this.envTimer)
   }
 }

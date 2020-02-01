@@ -86,6 +86,7 @@ Game.methods.join = {
 Game.methods.complete = {
   name: 'game.methods.complete',
   schema: {
+    _id: String,
     answer: {
       type: String,
       min: 1,
@@ -93,8 +94,8 @@ Game.methods.complete = {
       regEx: Meteor.settings.public.usernameRegEx
     }
   },
-  run: Meteor.isServer && function ({ answer }) {
-    const gameDoc = Game.api.findRunningGame()
+  run: Meteor.isServer && function ({ _id, answer }) {
+    const gameDoc = API.findRunningGame()
     if (!gameDoc) throw new Meteor.Error(404, 'no running game found')
 
     const correct = gameDoc.word === answer

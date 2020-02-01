@@ -3,6 +3,8 @@ import { Game } from '../../api/game/Game'
 import { cam1990, cam2020, playerConfig } from './GameConfig'
 import GameHandler from './GameHandler'
 import './game.html'
+import { Routes } from '../../api/routes/Routes'
+import { Router } from '../../api/routes/Router'
 
 Template.game.onCreated(function () {
   const instance = this
@@ -26,6 +28,11 @@ Template.game.onCreated(function () {
   instance.autorun(() => {
     const gameDoc = instance.state.get('gameDoc')
     if (!gameDoc) return
+
+    if (gameDoc.completedAt) {
+      alert('yeah compled')
+      return Router.go(Routes.root.path())
+    }
 
     if (!instance.game) {
       /**

@@ -39,8 +39,8 @@ Environment.prototype.update = function (seconds) {
   }
 }
 
-Environment.prototype.render = function () {
-
+Environment.prototype.dispose = function () {
+  this.sounds.dispose()
 }
 
 export default Environment

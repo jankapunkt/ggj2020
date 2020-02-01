@@ -52,4 +52,8 @@ Map.prototype.randomize = function (depth = 0.3) {
   }
 }
 
+Map.prototype.dispose = function () {
+  delete this.data
+}
+
 export default Map

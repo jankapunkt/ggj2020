@@ -290,4 +290,11 @@ Camera.prototype.project = function (height, angleH, angleV, distance) {
   return this.projectionCache
 }
 
+Camera.prototype.dispose = function () {
+  this.rayCache.dispose()
+  delete this.projectionCache
+  delete this.ctx
+  delete this.canvas
+}
+
 export default Camera
