@@ -1,9 +1,11 @@
-import { CanvasBuffer } from 'raycaster2'
+import Engine  from 'raycaster2'
 import { createCanvas } from 'canvas'
+
+const CanvasBuffer = Engine.CanvasBuffer
 
 export const getTextMetric = function getTextMetric (text, font) {
   let metrics = {}
-  const metricsBuffer = new CanvasBuffer({ canvas: createCanvas() })
+  const metricsBuffer = new CanvasBuffer({ canvas: createCanvas(0,0) })
   metricsBuffer.pre((ctx) => {
     // set font and measure width
     ctx.font = font

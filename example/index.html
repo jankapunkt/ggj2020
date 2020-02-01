@@ -130,7 +130,6 @@
    * ---------------------------------------------------------
    */
 
-  const MOBILE = /Android|webOS|iPhone|iPad|iPod|BlackBerry/i.test(navigator.userAgent)
 
   const cam1999 = {
     canvas: display,
@@ -138,15 +137,16 @@
     focalLength: 0.8,
     canvasScale: 0.25,
     range: 14,
-    isMobile: MOBILE
+    isMobile: false
   }
+
   const cam2019 = {
     canvas: display,
     resolution: 1024,
     focalLength: 0.8,
     canvasScale: 1,
     range: 14,
-    isMobile: MOBILE
+    isMobile: false
   }
 
   const playerConfig = {
@@ -229,50 +229,7 @@
     }
   })
 
-  const envConfig = {
-    sky: {
-      texture: skyBuffer
-    },
-    wall: {
-      textures: [
-        wallBuffer
-      ],
-      color: '#399dff',
-      border: {
-        top: 1,
-        left: 1,
-        bottom: 1,
-        right: 1
-      }
-    },
-    ground: {
-      texture: groundBuffer,
-      color: '#0000FF'
-    },
-    rain: {
-      amount: 1,
-      sound: { id: 'rain', url: 'assets/audio/rain.ogg' }
-    },
-    thunder: {
-      light: 2,
-      sound: { id: 'thunder', url: 'assets/audio/thunder.ogg' }
-    },
-    ambient: {
-      light: 5,
-      sound: {
-        id: 'ambient',
-        url: 'assets/audio/ambient.mp3',
-        listeners: {
-          ended: () => {
-            // play ambient after 15 seconds
-            setTimeout(() => {
-              environment.sounds.play('ambient', { volume: 0.8, loop: false })
-            }, 15 * 1000)
-          }
-        }
-      }
-    }
-  }
+
 
   /**
    * ---------------------------------------------------------
@@ -321,8 +278,8 @@
   })
 
   window.document.addEventListener('keydown', function (event) {
-    if (event.code !== 'Space') return
-    prompt('type in your solution', '')
+      if (event.code !== 'Space') return
+      prompt('type in your solution', '')
   })
 
   const startButtons = document.querySelectorAll('.title-button')

@@ -97,7 +97,7 @@ AudioPlayer.prototype.play = function (id, { volume, loop } = {}) {
   const sound = this.sounds[ id ]
   if (!sound) return
   if (volume) sound.audio.volume = volume
-  if (loop) sound.audio.loop = loop
+  if (loop) sound.audio.gameLoop = loop
   sound.audio.play()
 }
 

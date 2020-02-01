@@ -1,6 +1,9 @@
 import './title.html'
 import { Schema } from '../../api/schema/Schema'
 import { formIsValid } from '../../api/utils/formUtils'
+import { Game } from '../../api/game/Game'
+import { Routes } from '../../api/routes/Routes'
+import { Router } from '../../api/routes/Router'
 
 const usernameRegEx = Meteor.settings.public.usernameRegEx
 
@@ -36,7 +39,11 @@ Template.title.events({
     const insertDoc = formIsValid(joinSchema, 'joinForm')
     if (!insertDoc) return
 
-    console.log(insertDoc)
+    Meteor.call(Game.methods.join.name, { name: insertDoc.username }, (err, gameId) => {
+      if (err) return alert(err.reason)
+      const gameRoute = Routes.game.path(gameId)
+      Router.go(gameRoute)
+    })
   },
   'input .username-input' (event) {
     if (event.code === 'Enter') {

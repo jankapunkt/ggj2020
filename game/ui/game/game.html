@@ -1,17 +1,21 @@
 <template name="game">
-    <div class="title-screen">{{! TODO rename to settings-screen }}
-        <div class="title-box">
-            <button type="button" class="title-button" data-year="1990">1990</button>
-            <button type="button" class="title-button" data-year="2020">2020</button>
+    <div class="container-fluid">
+        {{#unless running}}
+        <div class="title-screen">{{! TODO rename to settings-screen }}
+            <div class="w-25 mx-auto">
+                <button type="button" class="btn btn-primary btn-lg start-button" data-year="1990">1990</button>
+                <button type="button" class="btn btn-primary btn-lg start-button" data-year="2020">2020</button>
+            </div>
         </div>
-    </div>
-    <canvas id='display' width='1' height='1'></canvas>
-    <canvas id='status' width='1' height='1'></canvas>
-    <canvas id='minimap' width='1' height='1'></canvas>
-    <div class="info-ui">
-        <div>
-            <span>FPS:</span>
-            <span class="fps-info">0</span>
+        {{/unless}}
+        <canvas id='display' width='1' height='1'></canvas>
+        <canvas id='status' width='1' height='1'></canvas>
+        <canvas id='minimap' width='1' height='1'></canvas>
+        <div class="info-ui">
+            <div>
+                <span>FPS:</span>
+                <span class="fps-info">0</span>
+            </div>
         </div>
     </div>
 </template>

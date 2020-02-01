@@ -8,3 +8,12 @@ Routes.root = {
     return import('../../ui/title/title')
   }
 }
+
+Routes.game = {
+  path: (gameId = ':gameId') => `/game/${gameId}`,
+  template: 'game',
+  label: () => 'game',
+  load: async function () {
+    return import('../../ui/game/game')
+  }
+}

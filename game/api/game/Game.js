@@ -22,7 +22,7 @@ Game.schema = {
   }
 }
 
-const api = Meteor.isServer && (function () {
+const API = Meteor.isServer && (function () {
   import { getMapDataFromText } from '../utils/textUtils'
 
   const wordGen = Meteor.isServer && Meteor.settings.wordGen
@@ -57,18 +57,20 @@ Game.methods = {}
 Game.methods.join = {
   name: 'game.methods.join',
   schema: {
-    name: String,
-    min: 3,
-    max: 16,
-    regEx: Meteor.settings.public.usernameRegEx
+    name: {
+      type: String,
+      min: 3,
+      max: 16,
+      regEx: Meteor.settings.public.usernameRegEx
+    }
   },
   run: Meteor.isServer && function ({ name }) {
-    let gameDoc = Game.api.findRunningGame()
+    let gameDoc = API.findRunningGame()
 
     if (!gameDoc) {
-      const word = api.randomWord()
-      const map = api.createMap(word)
-      const gameDocId = api.createGame({ word, map })
+      const word = API.randomWord()
+      const map = API.createMap(word)
+      const gameDocId = API.createGame({ word, map })
       gameDoc = Game.collection().findOne(gameDocId)
     }
 
