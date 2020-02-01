@@ -29,11 +29,11 @@ function Environment ({ sky, wall, ground, light, rain, thunder, ambient } = 0) 
 }
 
 Environment.prototype.update = function (seconds) {
-  if (this.thunder) {
+  if (this.thunder && this.thunder.volume > 0) {
     if (this.light > 0) {
       this.light = Math.max(this.light - 10 * seconds, 0)
     } else if (Math.random() * (this.thunder.seed || defaults.thunder.seed) < seconds) {
-      this.sounds.play(this.thunder.sound.id, { volume: this.thunder.sound.value || defaults.thunder.volume })
+      this.sounds.play(this.thunder.sound.id, { volume: this.thunder.sound.value || this.thunder.volume || defaults.thunder.volume })
       this.light = 2
     }
   }

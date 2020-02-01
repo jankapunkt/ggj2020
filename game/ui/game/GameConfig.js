@@ -9,7 +9,7 @@ export const cam1990 = display => ({
   resolution: 320,
   focalLength: 0.8,
   canvasScale: 0.125,
-  range: 6,
+  range: 14,
   isMobile: false
 })
 

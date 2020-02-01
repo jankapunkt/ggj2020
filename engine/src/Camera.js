@@ -103,9 +103,9 @@ Camera.prototype.clearBackground = function () {
 
 Camera.prototype.drawSky = function (player,  environment) {
   const sky = environment.sky
-  if (!sky || !sky.texture) return
+  if (!sky || !sky.textures || sky.textures.length === 0) return
 
-  const texture = sky.texture
+  const texture = sky.textures[sky.current]
   const width = texture.width * (this.height / texture.height) * 2
   const left = (player.direction / Globals.CIRCLE) * -width
   const height = (this.height / 2) - ((this.height / 2) * player.directionV)
@@ -244,7 +244,7 @@ Camera.prototype.drawColumn = function (columnIndex, ray, player, environment, m
     // draw rain from environment for this column
     // so we can draw more drops on top of a wall
     // by knowing its boundaries and projection
-    if (environment.rain && !environment.rain.disabled) {
+    if (environment.rain && environment.rain.amount && !environment.rain.disabled) {
       ctx.fillStyle = '#ffffff'
       ctx.globalAlpha = 0.15
       this.rainDrops = Math.pow(Math.random(), 100 - environment.rain.amount) * s

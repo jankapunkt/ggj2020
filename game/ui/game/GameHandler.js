@@ -36,28 +36,35 @@ class GameHandler {
   }
 
   setupEnvironment() {
-    const skyBuffer = new CanvasBuffer({ width: window.innerWidth * 2, height: window.innerHeight * 2, alpha: false })
-    skyBuffer.pre(context => {
-      context.fillStyle = '#00010a'
-      context.fillRect(0, 0, window.innerWidth * 2, window.innerHeight * 2)
+    const skyBuffers = [0, 1, 2, 3, 4, 5].map(index => {
+      const skyBuffer = new CanvasBuffer({ width: window.innerWidth * 2, height: window.innerHeight * 2, alpha: false })
+      skyBuffer.pre(context => {
+        const g = index * 30
+        const b = index * 50
+        context.fillStyle = `rgb(0, ${g}, ${ b })`
+        context.fillRect(0, 0, window.innerWidth * 2, window.innerHeight * 2)
 
-      const stars = 2500
-      const colorrange = [ 0, 60, 240 ]
-      let y
-      let radius
-      let hue
-      let sat
-      for (let i = 0; i < stars; i++) {
-        let x = Math.random() * window.innerWidth * 2
-        y = Math.random() * window.innerHeight * 2
-        radius = Math.random() * 1.2
-        hue = colorrange[ getRandom(0, colorrange.length - 1) ]
-        sat = getRandom(50, 100)
-        context.beginPath()
-        context.arc(x, y, radius, 0, 360)
-        context.fillStyle = 'hsl(' + hue + ', ' + sat + '%, 88%)'
-        context.fill()
-      }
+        const stars = 2500 - (500 * (index + 1))
+        console.log('stars', index, stars)
+        if (!stars) return
+        const colorrange = [ 0, 60, 240 ]
+        let y
+        let radius
+        let hue
+        let sat
+        for (let i = 0; i < stars; i++) {
+          let x = Math.random() * window.innerWidth * 2
+          y = Math.random() * window.innerHeight * 2
+          radius = Math.random() * 1.2
+          hue = colorrange[ getRandom(0, colorrange.length - 1) ]
+          sat = getRandom(50, 100)
+          context.beginPath()
+          context.arc(x, y, radius, 0, 360)
+          context.fillStyle = 'hsl(' + hue + ', ' + sat + '%, 88%)'
+          context.fill()
+        }
+      })
+      return skyBuffer
     })
 
     let wallBuffers = [0,1,2,3,4]
@@ -122,7 +129,8 @@ class GameHandler {
     const game = this
     const envConfig = {
       sky: {
-        texture: skyBuffer
+        current: 0,
+        textures: skyBuffers
       },
       wall: {
         textures: wallBuffers,
@@ -144,10 +152,10 @@ class GameHandler {
       },
       thunder: {
         light: 2,
-        sound: { id: 'thunder', url: '/assets/audio/thunder.ogg' }
+        sound: { id: 'thunder', url: '/assets/audio/thunder.ogg', volume: 0.6 }
       },
       ambient: {
-        light: 5,
+        light: 3,
         sound: {
           id: 'ambient',
           url: '/assets/audio/ambient.mp3',
@@ -156,6 +164,7 @@ class GameHandler {
       }
     }
     game.environment = new Environment(envConfig)
+    game.runEnvironment()
   }
 
   setupPlayer(playerConfig) {
@@ -194,10 +203,14 @@ class GameHandler {
       document.body.style.cursor = mouseCaptured ? 'none' : 'pointer'
     })
 
+    const isNum = x => /[0-9]/.test(x)
     window.document.addEventListener('keydown', function (event) {
-      if (event.code !== 'Space') return
-      const word = prompt('type in your solution', '')
-      if (!word) display.requestPointerLock()
+      if (isNum(event.code)) {
+        console.log(event.code)
+      }else if (event.code === 'Space') {
+        const word = prompt('type in your solution', '')
+        if (!word) display.requestPointerLock()
+      }
     })
   }
 
@@ -213,7 +226,9 @@ class GameHandler {
     display.requestPointerLock()
 
     // play rain immediately
-    game.environment.sounds.play('rain', { volume: 0.6, loop: true })
+    if (game.environment.rain.amount) {
+      game.environment.sounds.play('rain', { volume: 0.6, loop: true })
+    }
     game.environment.sounds.play('ambient', { volume: 0.8, loop: true })
 
     const actors = []
@@ -229,6 +244,7 @@ class GameHandler {
     const maxdist = 4
 
     display.addEventListener('click', function () {
+      console.log('click')
       const x = player.x
       const y = player.y
       const d = player.direction
@@ -256,9 +272,10 @@ class GameHandler {
           return
         }
         player.sounds.stop('paint')
-        player.sounds.play('paint', { volume: 0.8 })
+        player.sounds.play('paint', { volume: 1 })
       })
     })
+
 
     function update (seconds) {
       // environment updates
@@ -279,12 +296,115 @@ class GameHandler {
       statusScreen.render()
       miniMap.render({ threshold: 2 })
     }
-
     loop.start(update, render)
   }
 
-  dispose () {
+  runEnvironment() {
+    const game = this
+    const update = () => {
+      let count = 0
+      let walls = 0
+      game.map.data.forEach(value => {
+        if (value > 1) count++
+        if (value === 1) walls++
+      })
+      const perc = Math.round(100 * (count / (count + walls)))
 
+      const rain = { amount: 1, volume: 0.6 }
+      const thunder = { light: 2, volume: 0.5 }
+      const ambient = { light: 4 }
+      const sky = { current: 0 }
+
+      if (perc > 5) {
+        rain.amount = 0.6
+        rain.volume = 0.4
+        ambient.light = 5
+        sky.current = 0
+        thunder.light = 1.8
+        thunder.volume = 0.5
+      }
+
+      // very low rain
+      if (perc > 10) {
+        rain.amount = 0.3
+        rain.volume = 0.2
+        ambient.light = 7
+        sky.current = 1
+        thunder.light = 1
+        thunder.volume = 0.3
+      }
+
+      // no rain
+      // lighter sky
+      if (perc > 20) {
+        rain.amount = 0.0
+        rain.volume = 0.0
+        ambient.light = 9
+        sky.current = 2
+        thunder.light = 0.05
+        thunder.volume = 0.05
+      }
+
+      // dark blue sky
+      if (perc > 30) {
+        ambient.light = 11
+        sky.current = 3
+        thunder.light = 0.0
+        thunder.volume = 0.0
+      }
+
+      // orange sky
+      // ambient music
+      if (perc > 40) {
+        ambient.light = 15
+        sky.current = 4
+      }
+
+      // blue sky
+      // flowers grow
+      if (perc > 50) {
+        ambient.light = 20
+        sky.current = 5
+      }
+
+      // todo move to environment / camera
+      game.updateAmbient(ambient)
+      game.updateRain(rain)
+      game.updateThunder(thunder)
+      game.updateSky(sky)
+    }
+    update()
+    game.envTimer = setInterval(update, 1000)
+  }
+
+  updateRain ({ amount, volume }) {
+    if (!volume) {
+      this.environment.sounds.stop('rain')
+    } else {
+      this.environment.sounds.play('rain', { volume })
+    }
+    if (!amount) {
+      this.environment.rain.amount = 0.0
+    } else {
+      this.environment.rain.amount = amount
+    }
+  }
+
+  updateThunder({ light, volume }) {
+    this.environment.thunder.light = light
+    this.environment.thunder.volume = volume
+  }
+
+  updateSky({ current }) {
+    this.environment.sky.current = current
+  }
+
+  updateAmbient({ light }) {
+    if (light) this.environment.ambient.light = light
+  }
+
+  dispose () {
+    clearInterval(this.envTimer)
   }
 }
 
