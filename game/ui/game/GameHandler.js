@@ -235,7 +235,9 @@ class GameHandler {
     if (game.environment.rain.amount) {
       game.environment.sounds.play('rain', { volume: 0.6, loop: true })
     }
-    game.environment.sounds.play('ambient', { volume: 0.8, loop: true })
+    if (game.environment.ambient.sound) {
+      game.environment.sounds.play('ambient', { volume: 0.8, loop: true })
+    }
 
     const actors = []
     const environment = game.environment
@@ -391,13 +393,9 @@ class GameHandler {
     if (!volume) {
       this.environment.sounds.stop('rain')
     } else {
-      this.environment.sounds.play('rain', { volume })
+      this.environment.sounds.volume('rain', volume, { autoplay: true, loop: true })
     }
-    if (!amount) {
-      this.environment.rain.amount = 0.0
-    } else {
-      this.environment.rain.amount = amount
-    }
+    this.environment.rain.amount = amount
   }
 
   updateThunder({ light, volume }) {

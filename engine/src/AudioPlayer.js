@@ -101,6 +101,12 @@ AudioPlayer.prototype.play = function (id, { volume, loop } = {}) {
   sound.audio.play()
 }
 
+AudioPlayer.prototype.volume = function (id, value) {
+  const sound = this.sounds[ id ]
+  if (!sound) return
+  sound.audio.volume = value
+}
+
 /**
  * Pauses a sound by given id
  * @param id The id of the sound
