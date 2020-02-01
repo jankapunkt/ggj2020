@@ -237,9 +237,9 @@ class GameHandler {
 
     display.addEventListener('click', function () {
       const column = camera.resolution / 2
-      const x = column / camera.resolution - 0.5
-      const angle = Math.atan2(x, camera.focalLength)
-      const ray = rayCaster.cast(player, player.direction + angle, camera.range)
+      const cached = camera.rayCache.get(camera.key)
+      const ray = cached[column]
+      console.log(ray)
       const wall = ray.find(block => {
         return block.height && block.distance < 2 && block
       })
