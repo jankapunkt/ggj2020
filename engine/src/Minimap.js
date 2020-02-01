@@ -12,7 +12,7 @@ function Minimap ({ canvas, map, scale, background, wallColor, actorColor }) {
   this.debug = false
 }
 
-Minimap.prototype.update = function (state, player, rayCaster) {
+Minimap.prototype.update = function (state, player) {
   if (state.map) {
     this.drawActive = true
     this.x = player.x
@@ -49,7 +49,10 @@ Minimap.prototype.render = function (rayCache) {
 
   // draw background as rect
   ctx.fillStyle = this.bg
-  ctx.fillRect(0, 0, mapWidth * scale, mapHeight * scale)
+  ctx.strokeStyle = this.wallColor
+  ctx.rect(0, 0, mapWidth * scale, mapHeight * scale)
+  ctx.fill()
+  ctx.stroke()
 
   // Loop through all blocks on the map
   for (let y = 0; y < mapHeight; y++) {
@@ -67,12 +70,12 @@ Minimap.prototype.render = function (rayCache) {
   ctx.fillRect(this.x * scale - 2, this.y * scale - 2, 4, 4)
 
   // player direction
-  // ctx.beginPath()
-  // ctx.strokeStyle = this.actorColor
-  // ctx.moveTo(this.x * scale, this.y * scale)
-  // ctx.lineTo((this.x + Math.cos(this.direction) * 4) * scale, (this.y + Math.sin(this.direction) * 4) * scale)
-  // ctx.closePath()
-  // ctx.stroke()
+  ctx.beginPath()
+  ctx.strokeStyle = this.actorColor
+  ctx.moveTo(this.x * scale, this.y * scale)
+  ctx.lineTo((this.x + Math.cos(this.direction) * 4) * scale, (this.y + Math.sin(this.direction) * 4) * scale)
+  ctx.closePath()
+  ctx.stroke()
 
   // rays casted
   const rays = rayCache && rayCache.get(this.key)

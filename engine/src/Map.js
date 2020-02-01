@@ -16,10 +16,14 @@ function Map ({ width, height, data } = {}) {
 
 Map.defaults = defaults
 
-Map.prototype.load = function (data) {
+Map.prototype.load = function (data, isUint8 = false) {
   const self = this
   data.forEach((value, index) => {
-    self.data[index] = value & 0xFF // to uint8
+    if (isUint8) {
+      self.data[index] = value
+    } else {
+      self.data[index] = value & 0xFF // to uint8
+    }
   })
 }
 

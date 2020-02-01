@@ -85,14 +85,14 @@ RayCaster.prototype.cast = function (point, angle, range) {
 
 RayCaster.prototype.get = function (point, angle, range) {
   this.key = defaults.keyFunction(point.x, point.y, angle, range)
-  const cached = this.cache.get(this.key)
-  if (cached) {
-    return cached
-  }
+  //const cached = this.cache.get(this.key)
+  //if (cached) {
+  //  return cached
+  //}
 
   const ray = this.cast(point, angle, range)
-  this.cache.add(ray, this.key)
-  if (this.cache.count % 10 === 0) console.log(this.cache.size())
+  //this.cache.add(ray, this.key)
+  //if (this.cache.count % 10 === 0) console.log(this.cache.size())
   return ray
 }
 

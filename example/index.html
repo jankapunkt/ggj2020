@@ -35,8 +35,9 @@
         }
 
         #minimap {
-            left: 2%;
-            bottom: 2%;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
             z-index: 4;
         }
 
@@ -63,7 +64,7 @@
             font-weight: bold;
             color: #FFFFFF;
         }
-        
+
         .title-box {
             display: flex;
             justify-content: space-between;
@@ -71,6 +72,7 @@
             margin-left: 30%;
             margin-right: 30%;
         }
+
         .title-button {
             background-color: #00e2ff;
             color: #FFF;
@@ -82,12 +84,12 @@
 </head>
 <body>
 <div class="title-screen">
-    
+
     <div class="title-box">
         <button type="button" class="title-button" data-year="1990">1990</button>
         <button type="button" class="title-button" data-year="2020">2020</button>
     </div>
-    
+
 </div>
 <canvas id='display' width='1' height='1'></canvas>
 <canvas id='status' width='1' height='1'></canvas>
@@ -164,13 +166,48 @@
     } ]
   }
 
-  const mapConfig = {
-    width: 32,
-    height: 32
-  }
-
   function getRandom (min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min
+  }
+
+  function getTextMetric (text, font) {
+    let metrics = {}
+    const metricsBuffer = new CanvasBuffer({})
+    metricsBuffer.pre((ctx) => {
+      // set font and measure width
+      ctx.font = font
+      metrics = ctx.measureText(text)
+    })
+    return metrics
+  }
+
+  function getMapDataFromText (text, fontSize) {
+    const font = `${fontSize}px monospace`
+    const metrics = getTextMetric(text, font)
+    const width = Math.round(metrics.width)
+    const height = fontSize
+    const textBuffer = new CanvasBuffer({ width, height })
+
+    textBuffer.pre((ctx) => {
+      // set font and measure width
+      ctx.font = font
+      ctx.fillStyle = 'white'
+      ctx.fillText(text, 0, height)
+    })
+
+    const imageData = textBuffer.ctx.getImageData(0, 0, width, height)
+    const dataMap = []
+
+    for (let i = 0; i < imageData.data.length; i += 4) {
+      const r = imageData.data[ i ]
+      const g = imageData.data[ i + 1 ]
+      const b = imageData.data[ i + 2 ]
+      const a = imageData.data[ i + 3 ]
+      const value = (r + g + b + a) / (255 * 4)
+      dataMap.push(value > 0 ? 1 : 0)
+    }
+
+    return { data: dataMap, width, height }
   }
 
   const skyBuffer = new CanvasBuffer({ width: window.innerWidth * 2, height: window.innerHeight * 2, alpha: false })
@@ -236,7 +273,6 @@
       }
     }
   })
-
 
   const envConfig = {
     sky: {
@@ -307,12 +343,10 @@
     document.body.style.cursor = mouseCaptured ? 'none' : 'pointer'
   })
 
+  const mapConfig = getMapDataFromText('153', 18)
   const map = new Map(mapConfig)
-  map.randomize()
-
 
   const rayCaster = new RayCaster(map)
-
 
   const loop = new GameLoop()
   const controls = new Controls()
@@ -339,7 +373,7 @@
   const startButtons = document.querySelectorAll('.title-button')
   startButtons.forEach(button => button.addEventListener('click', function (event) {
     const dataSet = event.target.dataset
-    const year = dataSet['year']
+    const year = dataSet[ 'year' ]
 
     let camera
     if (year === '1990') camera = new Camera(cam1999)
@@ -379,7 +413,7 @@
     function render () {
       camera.render(player, environment, map, rayCaster)
       statusScreen.render()
-      miniMap.render(camera.rayCache)
+      miniMap.render()
     }
 
     loop.start(update, render)
