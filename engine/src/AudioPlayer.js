@@ -132,7 +132,11 @@ AudioPlayer.prototype.stop = function (id) {
 AudioPlayer.prototype.dispose = function (id) {
   if (id) {
     const sound = this.sounds[ id ]
-    if (!sound) return
+    if (!sound) {
+      console.warn('could not dispose sound by id', id)
+      return
+    }
+    this.stop(id)
     if (sound.listeners) {
       this.off(id, sound.listeners)
     }
@@ -140,7 +144,9 @@ AudioPlayer.prototype.dispose = function (id) {
     delete this.sounds[ id ]
   } else {
     // dispose all
-    Object.keys(this.sounds).forEach(key => this.dispose(key))
+    Object.keys(this.sounds).forEach(key => {
+      this.dispose(key)
+    })
   }
 }
 

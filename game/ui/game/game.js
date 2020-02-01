@@ -15,7 +15,6 @@ Template.game.onCreated(function () {
     const { gameId } = data.params
     const sub = Meteor.subscribe(Game.publications.current.name, { _id: gameId })
     if (sub.ready()) {
-      console.log('game doc ready')
       const gameDoc = Game.collection().findOne(gameId)
       if (!gameDoc) {
         // fails
@@ -31,6 +30,9 @@ Template.game.onCreated(function () {
 
     if (gameDoc.completedAt) {
       alert('yeah compled')
+      if (instance.game) {
+        instance.game.dispose()
+      }
       return Router.go(Routes.root.path())
     }
 
