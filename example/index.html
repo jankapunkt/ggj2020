@@ -90,7 +90,7 @@
   const Texture = engine.Texture
   const RayCaster = engine.RayCaster
   const CanvasBuffer = engine.CanvasBuffer
-
+  const Color = engine.Color
   /**
    * ---------------------------------------------------------
    * GET CANVAS ELEMENTS
@@ -175,13 +175,32 @@
     }
   })
 
+  const wallBuffer = new CanvasBuffer({ width: 1024, height: 1024 })
+  wallBuffer.pre((context) => {
+    context.fillStyle = '#06ff00'
+    context.fillRect(0, 0, 1024, 1024)
+
+    const block = 32
+
+    for (let x = 0; x < block; x++) {
+      for (let y = 0; y < block; y++) {
+        context.fillStyle = `rgb(
+            ${255 - 10 * x},
+            ${255 - 10 * y},
+            ${x * y}
+            )`
+        context.fillRect(x * block, y * block, block, block)
+      }
+    }
+  })
+
   const envConfig = {
     sky: {
       texture: skyBuffer
     },
     wall: {
       textures: [
-        new Texture('assets/textures/wall2.jpg', 2048, 2048),
+        wallBuffer,
         new Texture('assets/textures/wall1.jpg', 2048, 2048),
       ],
       color: '#399dff',
@@ -267,22 +286,6 @@
   player.on(Player.ON_DEAD, function (event) {
     loop.stop()
     alert('youre dead')
-  })
-
-  const monster = new Player({
-    x: map.size / 4,
-    y: map.size / 4,
-    health: 100,
-    direction: Math.PI * 0.3,
-    defaultSpeed: 1.8,
-    runFactor: 1.8,
-    sounds: [ {
-      id: 'walk',
-      url: 'assets/audio/steps.mp3'
-    }, {
-      id: 'run',
-      url: 'assets/audio/steps_run.ogg'
-    } ]
   })
 
   const title = document.querySelector('.title-screen')

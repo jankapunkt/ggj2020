@@ -1,8 +1,8 @@
 import AudioPlayer from './AudioPlayer.js'
-import Texture from './Texture.js'
-import CanvasBuffer from './CanvasBuffer.js'
-import Camera from './Camera.js'
 import Cache from './Cache.js'
+import Camera from './Camera.js'
+import CanvasBuffer from './CanvasBuffer.js'
+import Color from './Color.js'
 import Controls from './Controls.js'
 import Environment from './Environment.js'
 import GameLoop from './GameLoop.js'
@@ -12,20 +12,22 @@ import Minimap from './Minimap.js'
 import Player from './Player.js'
 import RayCaster from './RayCaster.js'
 import Status from './Status.js'
+import Texture from './Texture.js'
 
 export default {
   AudioPlayer,
-  Texture,
-  CanvasBuffer,
   Cache,
   Camera,
-  Environment,
+  CanvasBuffer,
+  Color,
   Controls,
+  Environment,
   GameLoop,
   Globals,
   Map,
   Minimap,
   Player,
   RayCaster,
-  Status
+  Status,
+  Texture
 }

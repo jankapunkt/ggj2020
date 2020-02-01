@@ -32,7 +32,7 @@ CanvasBuffer.prototype.dispose = function () {
  */
 
 CanvasBuffer.prototype.post = CanvasBuffer.prototype.pre = function (fct) {
-  return fct(this.ctx)
+  return fct(this.ctx, this.canvas)
 }
 
 /**

@@ -205,12 +205,19 @@ Camera.prototype.drawColumn = function (columnIndex, ray, player, environment) {
     }
 
     if (s === hit) {
-      const texture = environment.wall && environment.wall.textures && environment.wall.textures[ step.height - 1 ]
-
-      if (texture && texture.loaded) {
+      const texture = environment.wall && environment.wall.textures && environment.wall.textures[ 0 ]
+      if (texture) {
         let textureX = Math.floor(texture.width * step.offset)
-        ctx.globalAlpha = 1
-        ctx.drawImage(texture.image, textureX, 0, 1, texture.height * wallHeight, left, projection.top, width, projection.height)
+
+        if (texture.loaded) {
+          ctx.globalAlpha = 1
+          ctx.drawImage(texture.image, textureX, 0, 1, texture.height * wallHeight, left, projection.top, width, projection.height)
+        }
+
+        if (texture.canvas) {
+          ctx.globalAlpha = 1
+          texture.to(ctx, textureX, 0, 1, texture.height * wallHeight, left, projection.top, width, projection.height)
+        }
       } else {
         ctx.fillStyle = (environment.wall && environment.wall.color) || '#000000'
         ctx.globalAlpha = 1
