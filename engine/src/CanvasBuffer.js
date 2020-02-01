@@ -12,6 +12,7 @@ function CanvasBuffer ({ alpha = true, width, height } = {}) {
   this.canvas.height = height
   this.width = width
   this.height = height
+  this.isCanvasBuffer = true
   this.ctx = this.canvas.getContext('2d', { alpha })
 }
 

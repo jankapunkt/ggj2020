@@ -184,17 +184,25 @@ Camera.prototype.drawColumn = function (columnIndex, ray, player, environment) {
     // point where the ray has made a hit to the wall
     if (s <= hit) {
       const ground = environment.ground && environment.ground.texture
-      if (ground && ground.loaded) {
+      if (ground) {
         // if we have a ground texture defined in our environment,
         // we draw it in the same way as we do with our wall textures
         groundX = Math.floor(ground.width * step.offset)
-
         ctx.globalAlpha = 1
-        ctx.drawImage(ground.image, groundX, 0, 1, ground.height, left, projection.bottom, width, projection.height)
 
+        if (ground.loaded) {
+          ctx.drawImage(ground.image, groundX, 0, 1, ground.height, left, projection.bottom, width, projection.height)
+        }
+
+        if (ground.isCanvasBuffer) {
+          ground.to(ctx, groundX, 0, 1, ground.height, left, projection.bottom, width, projection.height)
+        }
+
+        // shadowing effect
         ctx.fillStyle = '#000000'
         ctx.globalAlpha = alpha
         ctx.fillRect( left, projection.bottom, width, projection.height)
+
       } else {
         // otherwise we draw by a given color and some alpha so we create
         // some sense of a ground here and avoid the color to be just blank

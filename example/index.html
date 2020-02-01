@@ -63,10 +63,32 @@
             font-weight: bold;
             color: #FFFFFF;
         }
+        
+        .title-box {
+            display: flex;
+            justify-content: space-between;
+            width: 100% !important;
+            margin-left: 30%;
+            margin-right: 30%;
+        }
+        .title-button {
+            background-color: #00e2ff;
+            color: #FFF;
+            width: 45%;
+            height: 2rem;
+            border: none;
+        }
     </style>
 </head>
 <body>
-<div class="title-screen">YOU REGAINED YOUR CONSCIOUSNESS...</div>
+<div class="title-screen">
+    
+    <div class="title-box">
+        <button type="button" class="title-button" data-year="1990">1990</button>
+        <button type="button" class="title-button" data-year="2020">2020</button>
+    </div>
+    
+</div>
 <canvas id='display' width='1' height='1'></canvas>
 <canvas id='status' width='1' height='1'></canvas>
 <canvas id='minimap' width='1' height='1'></canvas>
@@ -184,15 +206,37 @@
 
     for (let x = 0; x < block; x++) {
       for (let y = 0; y < block; y++) {
+        const value = 255 - Math.floor(Math.random() * 50)
         context.fillStyle = `rgb(
-            ${255 - 10 * x},
-            ${255 - 10 * y},
-            ${x * y}
+            ${value},
+            ${value},
+            ${value}
             )`
         context.fillRect(x * block, y * block, block, block)
       }
     }
   })
+
+  const groundBuffer = new CanvasBuffer({ width: 1024, height: 1024 })
+  groundBuffer.pre((context) => {
+    context.fillStyle = '#b3b0b4'
+    context.fillRect(0, 0, 1024, 1024)
+
+    const block = 32
+
+    for (let x = 0; x < block; x++) {
+      for (let y = 0; y < block; y++) {
+        const value = 255 - Math.floor(Math.random() * 50)
+        context.fillStyle = `rgb(
+            ${value},
+            ${value},
+            ${value}
+            )`
+        context.fillRect(x * block, y * block, block, block)
+      }
+    }
+  })
+
 
   const envConfig = {
     sky: {
@@ -200,8 +244,7 @@
     },
     wall: {
       textures: [
-        wallBuffer,
-        new Texture('assets/textures/wall1.jpg', 2048, 2048),
+        wallBuffer
       ],
       color: '#399dff',
       border: {
@@ -212,7 +255,7 @@
       }
     },
     ground: {
-      texture: new Texture('assets/textures/ground.jpg', 2048, 2048),
+      texture: groundBuffer,
       color: '#0000FF'
     },
     rain: {
@@ -270,7 +313,7 @@
 
   const rayCaster = new RayCaster(map)
 
-  const camera = new Camera(cam1999)
+
   const loop = new GameLoop()
   const controls = new Controls()
   const miniMap = new Minimap({
@@ -288,9 +331,19 @@
     alert('youre dead')
   })
 
-  const title = document.querySelector('.title-screen')
-  title.addEventListener('click', function () {
+  const startButtons = document.querySelectorAll('.title-button')
+  startButtons.forEach(button => button.addEventListener('click', function (event) {
+    const dataSet = event.target.dataset
+    const year = dataSet['year']
+
+    let camera
+    if (year === '1990') camera = new Camera(cam1999)
+    if (year === '2020') camera = new Camera(cam2019)
+
+    // hide title screen
+    const title = document.querySelector('.title-screen')
     title.style.display = 'none'
+
     display.requestPointerLock = display.requestPointerLock || display.mozRequestPointerLock || display.webkitRequestPointerLock
     display.requestPointerLock()
 
@@ -325,7 +378,7 @@
     }
 
     loop.start(update, render)
-  })
+  }))
 
 </script>
 </body>
