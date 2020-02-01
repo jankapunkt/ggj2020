@@ -36,7 +36,7 @@ Minimap.prototype.clear = function () {
   ctx.clearRect(0, 0, mapWidth * scale, mapHeight * scale)
 }
 
-Minimap.prototype.render = function (rayCache) {
+Minimap.prototype.render = function ({ rayCache, threshold = 1 } = {}) {
   if (!this.drawActive) return
 
   const ctx = this.ctx
@@ -54,11 +54,13 @@ Minimap.prototype.render = function (rayCache) {
   ctx.fill()
   ctx.stroke()
 
+  ctx.strokeStyle = 'none'
+
   // Loop through all blocks on the map
   for (let y = 0; y < mapHeight; y++) {
     for (let x = 0; x < mapWidth; x++) {
       const wall = map.get(x, y)
-      if (wall > 0) {
+      if (wall >= threshold) {
         ctx.fillStyle = this.wallColor
         ctx.fillRect(x * scale, y * scale, scale, scale)
       }

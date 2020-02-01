@@ -25,11 +25,11 @@ Template.game.onCreated(function () {
 
   instance.autorun(() => {
     const gameDoc = instance.state.get('gameDoc')
-    if (!gameDoc) return
+    if (!gameDoc || instance.game) return
 
     /**
      * ---------------------------------------------------------
-     * GET CANVAS ELEMENTS
+     * SETUP ENGINE AND GAME LOGIC
      * ---------------------------------------------------------
      */
 

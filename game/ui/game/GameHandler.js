@@ -243,7 +243,9 @@ class GameHandler {
       const wall = ray.find(block => {
         return block.height && block.distance < 2 && block
       })
+
       if (!wall) return
+
       const len = environment.wall.textures.length
       const value = 1 + Math.floor(Math.random() * len)
       map.set(wall.mapx, wall.mapy, value)
@@ -266,7 +268,7 @@ class GameHandler {
     function render () {
       camera.render(player, environment, map, rayCaster)
       statusScreen.render()
-      miniMap.render(camera.rayCache)
+      miniMap.render({ threshold: 2 })
     }
 
     loop.start(update, render)
