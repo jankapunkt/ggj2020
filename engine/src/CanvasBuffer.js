@@ -6,8 +6,8 @@
  * @constructor
  */
 
-function CanvasBuffer ({ alpha = true, width, height } = {}) {
-  this.canvas = document.createElement('canvas')
+function CanvasBuffer ({ alpha = true, width, height, canvas } = {}) {
+  this.canvas = canvas || document.createElement('canvas')
   this.canvas.width = width
   this.canvas.height = height
   this.width = width

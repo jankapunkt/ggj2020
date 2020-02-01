@@ -1,0 +1,110 @@
+export const Game = { name: 'game' }
+
+Game.collection = () => {
+  throw new Error('not created')
+}
+
+Game.schema = {
+  word: String,
+  users: Array,
+  'users.$': {
+    type: String,
+    min: 3,
+    max: 16,
+    regEx: Meteor.settings.public.usernameRegEx
+  },
+  map: Array,
+  'map.$': Number,
+  createdAt: Date,
+  completedAt: {
+    type: Date,
+    optional: true
+  }
+}
+
+const api = Meteor.isServer && (function () {
+  import { getMapDataFromText } from '../utils/textUtils'
+
+  const wordGen = Meteor.isServer && Meteor.settings.wordGen
+
+  return {
+    randomWord () {
+      let word = ''
+      const chars = wordGen.chars
+      for (let i = 0; i < wordGen.length; i++) {
+        const index = Math.floor(Math.random() * chars.length)
+        word += chars[ index ]
+      }
+      return word
+    },
+    findRunningGame () {
+      return Game.collection().findOne({
+        completedAt: { $exists: false }
+      })
+    },
+    createGame ({ map, word }) {
+      const createdAt = new Date()
+      return Game.collection().insert({ word, map, createdAt })
+    },
+    createMap (word, size = 16) {
+      return getMapDataFromText(word, size)
+    }
+  }
+})()
+
+Game.methods = {}
+
+Game.methods.join = {
+  name: 'game.methods.join',
+  schema: {
+    name: String,
+    min: 3,
+    max: 16,
+    regEx: Meteor.settings.public.usernameRegEx
+  },
+  run: Meteor.isServer && function ({ name }) {
+    let gameDoc = Game.api.findRunningGame()
+
+    if (!gameDoc) {
+      const word = api.randomWord()
+      const map = api.createMap(word)
+      const gameDocId = api.createGame({ word, map })
+      gameDoc = Game.collection().findOne(gameDocId)
+    }
+
+    Game.collection().update(gameDoc._id, { $addToSet: { users: name } })
+    return gameDoc._id
+  }
+}
+
+Game.methods.complete = {
+  name: 'game.methods.complete',
+  schema: {
+    answer: {
+      type: String,
+      min: 1,
+      max: 20,
+      regEx: Meteor.settings.public.usernameRegEx
+    }
+  },
+  run: Meteor.isServer && function ({ answer }) {
+    const gameDoc = Game.api.findRunningGame()
+    if (!gameDoc) throw new Meteor.Error(404, 'no running game found')
+
+    const correct = gameDoc.word === answer
+    if (correct) {
+      Game.collection().update(gameDoc._id, { $set: { completedAt: new Date() } })
+      return true
+    }
+    return false
+  }
+}
+
+Game.publications = {}
+Game.publications.current = {
+  name: 'game.publication.current',
+  schema: { _id: String },
+  run: Meteor.isServer && function ({ _id }) {
+    return Game.collection().find({ _id }, { limit: 1 })
+  }
+}

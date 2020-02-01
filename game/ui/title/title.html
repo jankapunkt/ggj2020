@@ -1,0 +1,15 @@
+<template name="title">
+    <div class="container text-center text-white">
+        <div class="row">
+            <div class="col-6 mx-auto">
+                <h1>Join a game</h1>
+
+                {{#autoForm id="joinForm" type="normal" schema=joinSchema}}
+                    {{> afQuickField name="username"}}
+                    <small>Allowed chars {{allowedChars}}</small>
+
+                {{/autoForm}}
+            </div>
+        </div>
+    </div>
+</template>
