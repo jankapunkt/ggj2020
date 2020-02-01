@@ -26,7 +26,9 @@ function RayCaster (map) {
 RayCaster.prototype.inspect = function (sin, cos, step, shiftX, shiftY, distance, offset) {
   const dx = cos < 0 ? shiftX : 0
   const dy = sin < 0 ? shiftY : 0
-  step.height = this.map.get(step.x - dx, step.y - dy)
+  step.mapx = step.x - dx
+  step.mapy = step.y - dy
+  step.height = this.map.get(step.mapx, step.mapy) ? 1 : 0
   step.distance = distance + Math.sqrt(step.length2)
   if (shiftX) {
     step.shading = cos < 0 ? 2 : 0

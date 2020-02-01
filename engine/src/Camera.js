@@ -84,7 +84,7 @@ Camera.prototype.render = function (player, environment, map, rayCaster) {
   }
   this.clearBackground()
   this.drawSky(player, environment)
-  this.drawColumns(player, environment, rayCaster)
+  this.drawColumns(player, environment, map)
 //  this.drawActors(player, environment, map)
   // this.drawWeapon(player.weapon, player.paces)
 }
@@ -142,17 +142,17 @@ Camera.prototype.drawSky = function (player,  environment) {
 
 }
 
-Camera.prototype.drawColumns = function (player, environment) {
+Camera.prototype.drawColumns = function (player, environment, map) {
   this.ctx.save()
   const rays = this.rayCache.get(this.key)
   for (let i = 0, len = rays.length; i < len; i++) {
     const entry = rays[ i ]
-    this.drawColumn(i, entry, player, environment)
+    this.drawColumn(i, entry, player, environment, map)
   }
   this.ctx.restore()
 }
 
-Camera.prototype.drawColumn = function (columnIndex, ray, player, environment) {
+Camera.prototype.drawColumn = function (columnIndex, ray, player, environment, map) {
   const ctx = this.ctx
   const left = Math.floor(columnIndex * this.spacing)
   const width = Math.ceil(this.spacing)
@@ -213,7 +213,8 @@ Camera.prototype.drawColumn = function (columnIndex, ray, player, environment) {
     }
 
     if (s === hit) {
-      const texture = environment.wall && environment.wall.textures && environment.wall.textures[ 0 ]
+      const value = map.get(step.mapx, step.mapy)
+      const texture = environment.wall && environment.wall.textures && environment.wall.textures[ value - 1 ]
       if (texture) {
         let textureX = Math.floor(texture.width * step.offset)
 

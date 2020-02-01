@@ -11,6 +11,7 @@ const Camera = engine.Camera
 const GameLoop = engine.GameLoop
 const RayCaster = engine.RayCaster
 const CanvasBuffer = engine.CanvasBuffer
+const Color = engine.Color
 
 class GameHandler {
 
@@ -57,25 +58,44 @@ class GameHandler {
       }
     })
 
-    const wallBuffer = new CanvasBuffer({ width: 1024, height: 1024 })
-    wallBuffer.pre((context) => {
-      context.fillStyle = '#06ff00'
-      context.fillRect(0, 0, 1024, 1024)
-
+    let wallBuffers = [0,1,2,3,4]
+    wallBuffers = wallBuffers.map((index) => {
       const block = 32
+      const wallBuffer = new CanvasBuffer({ width: 1024, height: 1024 })
+      wallBuffer.pre((context) => {
 
-      for (let x = 0; x < block; x++) {
-        for (let y = 0; y < block; y++) {
-          const value = 255 - Math.floor(Math.random() * 50)
-          context.fillStyle = `rgb(
-            ${value},
-            ${value},
-            ${value}
-            )`
-          context.fillRect(x * block, y * block, block, block)
+        for (let x = 0; x < block; x++) {
+          for (let y = 0; y < block; y++) {
+            const value = 255 - Math.floor(Math.random() * 50)
+            switch (index) {
+              case 0:
+                context.fillStyle = `rgb( ${value}, ${value}, ${value})`
+                break
+              case 1:
+                context.fillStyle = `rgb( ${value}, ${0}, ${value})`
+                break
+              case 2:
+                context.fillStyle = `rgb( ${0}, ${0}, ${value})`
+                break;
+              case 3:
+                context.fillStyle = `rgb( ${value}, ${value}, ${0})`
+                break
+              case 4:
+                context.fillStyle = `rgb( ${value}, ${0}, ${0})`
+                break;
+              case 5:
+                context.fillStyle = `rgb( ${0}, ${value}, ${value})`
+                break
+              default:
+                context.fillStyle = `rgb( ${0}, ${0}, ${0})`
+            }
+            context.fillRect(x * block, y * block, block, block)
+          }
         }
-      }
+      })
+      return wallBuffer
     })
+
 
     const groundBuffer = new CanvasBuffer({ width: 1024, height: 1024 })
     groundBuffer.pre((context) => {
@@ -103,9 +123,7 @@ class GameHandler {
         texture: skyBuffer
       },
       wall: {
-        textures: [
-          wallBuffer
-        ],
+        textures: wallBuffers,
         color: '#399dff',
         border: {
           top: 1,
@@ -217,6 +235,20 @@ class GameHandler {
     const loop = this.gameLoop
     const miniMap = this.minimap
 
+    display.addEventListener('click', function () {
+      const column = camera.resolution / 2
+      const x = column / camera.resolution - 0.5
+      const angle = Math.atan2(x, camera.focalLength)
+      const ray = rayCaster.cast(player, player.direction + angle, camera.range)
+      const wall = ray.find(block => {
+        return block.height && block.distance < 2 && block
+      })
+      if (!wall) return
+      const len = environment.wall.textures.length
+      const value = 1 + Math.floor(Math.random() * len)
+      map.set(wall.mapx, wall.mapy, value)
+    })
+
     function update (seconds) {
       // environment updates
       environment.update(seconds)
@@ -234,7 +266,7 @@ class GameHandler {
     function render () {
       camera.render(player, environment, map, rayCaster)
       statusScreen.render()
-      miniMap.render()
+      miniMap.render(camera.rayCache)
     }
 
     loop.start(update, render)
