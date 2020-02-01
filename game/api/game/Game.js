@@ -13,8 +13,12 @@ Game.schema = {
     max: 16,
     regEx: Meteor.settings.public.usernameRegEx
   },
-  map: Array,
-  'map.$': Number,
+  map: Object,
+  'map.width': Number,
+  'map.height': Number,
+  'map.data': Array,
+  'map.data.$': Number,
+
   createdAt: Date,
   completedAt: {
     type: Date,
@@ -99,6 +103,25 @@ Game.methods.complete = {
       return true
     }
     return false
+  }
+}
+
+Game.methods.updateWall = {
+  name: 'game.methods.updateWall',
+  schema: {
+    _id: String,
+    index: {
+      type: Number,
+      min: 0
+    },
+    value: Number
+  },
+  run: Meteor.isServer && function ({ _id, index, value }) {
+    const gameDoc = Game.collection().findOne(_id)
+    if (!gameDoc) throw new Meteor.Error(404, 'no running game by id')
+    if (index >= gameDoc.map.data.length) throw new Meteor.Error(500, 'tried to access undefined index')
+    const modifier = { [ `map.data.${index}` ]: value }
+    return Game.collection().update(_id, { $set: modifier })
   }
 }
 

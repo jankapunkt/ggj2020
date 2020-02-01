@@ -25,26 +25,35 @@ Template.game.onCreated(function () {
 
   instance.autorun(() => {
     const gameDoc = instance.state.get('gameDoc')
-    if (!gameDoc || instance.game) return
+    if (!gameDoc) return
 
-    /**
-     * ---------------------------------------------------------
-     * SETUP ENGINE AND GAME LOGIC
-     * ---------------------------------------------------------
-     */
+    if (!instance.game) {
+      /**
+       * ---------------------------------------------------------
+       * SETUP ENGINE AND GAME LOGIC
+       * ---------------------------------------------------------
+       */
 
-    const display = document.querySelector('#display')
-    const minimapCanvas = document.querySelector('#minimap')
-    const statusCanvas = document.querySelector('#status')
+      const display = document.querySelector('#display')
+      const minimapCanvas = document.querySelector('#minimap')
+      const statusCanvas = document.querySelector('#status')
 
-    const gameInstance = new GameHandler(display, minimapCanvas, statusCanvas)
-    gameInstance.setupMap(gameDoc.map)
-    gameInstance.setupMinimap()
-    gameInstance.setupPlayer(playerConfig)
-    gameInstance.setupEnvironment()
-    gameInstance.setupWindowHandlers()
+      const gameInstance = new GameHandler(gameDoc._id, display, minimapCanvas, statusCanvas)
+      gameInstance.setupMap(gameDoc.map)
+      gameInstance.setupMinimap()
+      gameInstance.setupPlayer(playerConfig)
+      gameInstance.setupEnvironment()
+      gameInstance.setupWindowHandlers()
 
-    instance.game = gameInstance
+      instance.game = gameInstance
+    } else {
+      const map = instance.game.map
+      gameDoc.map.data.forEach((value, index) => {
+        if (map.data[index] !== value) {
+          map.data[index] = value
+        }
+      })
+    }
   })
 })
 

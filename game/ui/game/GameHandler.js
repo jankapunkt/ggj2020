@@ -1,5 +1,6 @@
 import engine from 'raycaster2'
 import {getRandom} from '../../api/utils/utils'
+import { Game } from '../../api/game/Game'
 
 const Status = engine.Status
 const Player = engine.Player
@@ -15,7 +16,8 @@ const Color = engine.Color
 
 class GameHandler {
 
-  constructor (displayCanvas, minimapCanvas, statusCanvas) {
+  constructor (id, displayCanvas, minimapCanvas, statusCanvas) {
+    this.id = id
     this.gameLoop = new GameLoop()
     this.controls = new Controls()
     this.environment = null
@@ -235,20 +237,31 @@ class GameHandler {
     const loop = this.gameLoop
     const miniMap = this.minimap
 
+    const maxdist = 4
     display.addEventListener('click', function () {
-      const column = camera.resolution / 2
-      const cached = camera.rayCache.get(camera.key)
-      const ray = cached[column]
-      console.log(ray)
-      const wall = ray.find(block => {
-        return block.height && block.distance < 2 && block
+      const x = player.x
+      const y = player.y
+      const d = player.direction
+
+      let found = undefined
+      let dx
+      let dy
+      for (let i = 1 ; i <= maxdist; i++) {
+        dx = (x + Math.cos(d) * i)
+        dy = (y + Math.sin(d) * i)
+        found = game.map.get(dx, dy)
+        if (found) break
+      }
+
+      if (!found) return
+
+      const _id = game.id
+      const index = Math.floor(dy) * game.map.width + Math.floor(dx)
+      const value = Math.floor(Math.random() * environment.wall.textures.length) + 1
+      game.map.set(dx, dy, value)
+      Meteor.call(Game.methods.updateWall.name, { _id, index, value }, (err) => {
+        if (err) console.error(err)
       })
-
-      if (!wall) return
-
-      const len = environment.wall.textures.length
-      const value = 1 + Math.floor(Math.random() * len)
-      map.set(wall.mapx, wall.mapy, value)
     })
 
     function update (seconds) {
