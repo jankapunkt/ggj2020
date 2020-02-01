@@ -253,7 +253,7 @@ class GameHandler {
         if (found) break
       }
 
-      if (!found) return
+      if (found !== 1) return
 
       const _id = game.id
       const index = Math.floor(dy) * game.map.width + Math.floor(dx)
