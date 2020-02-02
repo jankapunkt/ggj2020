@@ -1,21 +1,29 @@
 <template name="game">
     <div class="container-fluid">
         {{#unless running}}
-        <div class="title-screen">{{! TODO rename to settings-screen }}
+        <div class="title-screen">
+            <h1>Can you remember the current year?</h1>
             <div class="w-25 mx-auto">
                 <button type="button" class="btn btn-primary btn-lg start-button" data-year="1990">1990</button>
-                <button type="button" class="btn btn-primary btn-lg start-button" data-year="2020">2020</button>
+                <button type="button" class="btn btn-primary btn-lg start-button" disabled data-year="2020">2020</button>
             </div>
         </div>
         {{/unless}}
+        <div class="info-ui h-100">
+            {{#with history}}
+                <ul class="list-group bg-transparent border-0">
+                {{#each entry in this}}
+                    <li class="list-group-item bg-transparent border-0">
+                        <i class="fa fa-fw fa-paint-brush" style="color: {{entry.color}};"></i>
+                        <span class="text-light">{{entry.name}}</span>
+                    </li>
+                {{/each}}
+                </ul>
+            {{/with}}
+        </div>
         <canvas id='display' width='1' height='1'></canvas>
         <canvas id='status' width='1' height='1'></canvas>
         <canvas id='minimap' width='1' height='1'></canvas>
-        <div class="info-ui">
-            <div>
-                <span>FPS:</span>
-                <span class="fps-info">0</span>
-            </div>
-        </div>
+
     </div>
 </template>

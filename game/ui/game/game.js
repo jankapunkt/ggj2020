@@ -5,10 +5,16 @@ import GameHandler from './GameHandler'
 import './game.html'
 import { Routes } from '../../api/routes/Routes'
 import { Router } from '../../api/routes/Router'
+import { History } from '../../api/history/History'
 
 Template.game.onCreated(function () {
   const instance = this
   instance.state = new ReactiveDict()
+
+  /**
+   * Subscription to the main game document
+   */
+
   instance.autorun(() => {
     const data = Template.currentData()
     console.log(data)
@@ -23,6 +29,29 @@ Template.game.onCreated(function () {
       instance.state.set('gameDoc', gameDoc)
     }
   })
+
+  /**
+   * Subscription to the game history
+   */
+
+  instance.autorun(() => {
+    const gameDoc = instance.state.get('gameDoc')
+    if (!gameDoc) return
+
+    const gameId = gameDoc._id
+    const historySub = Meteor.subscribe(History.publications.game.name, {gameId})
+    if (historySub.ready()) {
+      const historyDoc =History.collection().findOne({ gameId })
+      if (historyDoc) {
+        console.log(historyDoc.entries.reverse())
+        instance.state.set('history', historyDoc.entries.reverse())
+      }
+    }
+  })
+
+  /**
+   * Initialization of a new game or ending an existing one
+   */
 
   instance.autorun(() => {
     const gameDoc = instance.state.get('gameDoc')
@@ -56,6 +85,9 @@ Template.game.onCreated(function () {
 
       instance.game = gameInstance
     } else {
+      // the publication runs this function each time the map updates
+      // so we are syncing the cached client size map
+      // with values from the updated values from the gameDoc
       const map = instance.game.map
       gameDoc.map.data.forEach((value, index) => {
         if (map.data[index] !== value) {
@@ -71,7 +103,12 @@ Template.game.helpers({
     return Template.instance().state.get('gameDoc')
   },
   running () {
-    return Template.instance().state.get('running')
+    return Template.instance().state.get('isRunning')
+  },
+  history () {
+    const instance = Template.instance()
+
+    return instance.state.get('isRunning') && instance.state.get('history')
   }
 })
 
@@ -88,6 +125,6 @@ Template.game.events({
     }
 
     templateInstance.game.run()
-    templateInstance.state.set('running', true)
+    templateInstance.state.set('isRunning', true)
   }
 })

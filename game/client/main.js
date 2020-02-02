@@ -1,4 +1,5 @@
 import '../startup/both/contexts'
 import '../startup/client/routes'
 import '../startup/client/bootstrap'
+import '../startup/client/fontawesome'
 import './main.html'

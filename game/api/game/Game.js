@@ -1,3 +1,5 @@
+import { History } from '../history/History'
+
 export const Game = { name: 'game' }
 
 Game.collection = () => {
@@ -18,7 +20,6 @@ Game.schema = {
   'map.height': Number,
   'map.data': Array,
   'map.data.$': Number,
-
   createdAt: Date,
   completedAt: {
     type: Date,
@@ -61,16 +62,25 @@ Game.methods = {}
 Game.methods.join = {
   name: 'game.methods.join',
   schema: {
-    name: {
+    username: {
       type: String,
       min: 3,
       max: 16,
       regEx: Meteor.settings.public.usernameRegEx
+    },
+    password: {
+      type: String,
+      min: 4,
+      max: 128
     }
   },
-  run: Meteor.isServer && function ({ name }) {
-    let gameDoc = API.findRunningGame()
+  run: Meteor.isServer && function ({ username, password }) {
+    let userId = this.userId
+    if (!userId) {
+      userId = Accounts.createUser({ username, password })
+    }
 
+    let gameDoc = API.findRunningGame()
     if (!gameDoc) {
       const word = API.randomWord()
       const map = API.createMap(word)
@@ -78,7 +88,7 @@ Game.methods.join = {
       gameDoc = Game.collection().findOne(gameDocId)
     }
 
-    Game.collection().update(gameDoc._id, { $addToSet: { users: name } })
+    Game.collection().update(gameDoc._id, { $addToSet: { users: userId } })
     return gameDoc._id
   }
 }
@@ -115,15 +125,27 @@ Game.methods.updateWall = {
       type: Number,
       min: 0
     },
-    value: Number
+    value: Number,
+    color: String
   },
-  run: Meteor.isServer && function ({ _id, index, value }) {
-    const gameDoc = Game.collection().findOne(_id)
-    if (!gameDoc) throw new Meteor.Error(404, 'no running game by id')
-    if (index >= gameDoc.map.data.length) throw new Meteor.Error(500, 'tried to access undefined index')
-    const modifier = { [ `map.data.${index}` ]: value }
-    return Game.collection().update(_id, { $set: modifier })
-  }
+  run: Meteor.isServer && (function () {
+    import { History } from '../history/History'
+
+    return function ({ _id, index, value, color }) {
+      const userId = this.userId
+      const user = Meteor.users.findOne(userId)
+      if (!userId || !user) throw new Meteor.Error(403, 'permission denied not logged in')
+
+      const gameDoc = Game.collection().findOne(_id)
+      if (!gameDoc) throw new Meteor.Error(404, 'no running game by id')
+      if (index >= gameDoc.map.data.length) throw new Meteor.Error(500, 'tried to access undefined index')
+
+      const modifier = { [ `map.data.${index}` ]: value }
+      const gameUpdated = Game.collection().update(_id, { $set: modifier })
+      const historyUpdated = Meteor.call(History.methods.update.name, { color, userId, name: user.username, gameId: gameDoc._id })
+      return gameUpdated && historyUpdated
+    }
+  })()
 }
 
 Game.publications = {}

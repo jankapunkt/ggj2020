@@ -72,10 +72,33 @@ class GameHandler {
       const block = 32
       const wallBuffer = new CanvasBuffer({ width: 1024, height: 1024 })
       wallBuffer.pre((context) => {
+        let value = 255 - Math.floor(Math.random() * 50)
+        switch (index) {
+          case 0:
+            wallBuffer.background = `rgb( ${value}, ${value}, ${value})`
+            break
+          case 1:
+            wallBuffer.background = `rgb( ${value}, ${0}, ${value})`
+            break
+          case 2:
+            wallBuffer.background = `rgb( ${0}, ${0}, ${value})`
+            break;
+          case 3:
+            wallBuffer.background = `rgb( ${value}, ${value}, ${0})`
+            break
+          case 4:
+            wallBuffer.background = `rgb( ${value}, ${0}, ${0})`
+            break;
+          case 5:
+            wallBuffer.background = `rgb( ${0}, ${value}, ${value})`
+            break
+          default:
+            wallBuffer.background= `rgb( ${0}, ${0}, ${0})`
+        }
 
         for (let x = 0; x < block; x++) {
           for (let y = 0; y < block; y++) {
-            const value = 255 - Math.floor(Math.random() * 50)
+            value = 255 - Math.floor(Math.random() * 50)
             switch (index) {
               case 0:
                 context.fillStyle = `rgb( ${value}, ${value}, ${value})`
@@ -275,9 +298,16 @@ class GameHandler {
 
       const _id = game.id
       const index = Math.floor(dy) * game.map.width + Math.floor(dx)
-      const value = Math.floor(Math.random() * environment.wall.textures.length) + 1
+      let value = getRandom(2, environment.wall.textures.length - 1)
+
+      // optimistic ui: update the wall immediately
+      // and reverse if the server encountered any error
       game.map.set(dx, dy, value)
-      Meteor.call(Game.methods.updateWall.name, { _id, index, value }, (err) => {
+
+      const color = game.environment.wall.textures[value].background
+      console.warn('update color', index, value, color)
+
+      Meteor.call(Game.methods.updateWall.name, { _id, index, value, color }, (err) => {
         if (err) {
           console.error(err)
           game.map.set(dx, dy, found) // reset to old value

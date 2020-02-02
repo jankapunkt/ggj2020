@@ -26,3 +26,6 @@ aldeed:collection2
 dburles:mongo-collection-instances
 force-ssl
 reactive-dict
+
+accounts-base
+accounts-password

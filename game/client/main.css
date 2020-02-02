@@ -34,13 +34,14 @@ canvas {
 }
 
 .info-ui {
+  position: absolute;
   font-weight: bold;
   font-size: 10px;
   color: #FFFFFF;
   font-family: monospace;
-  position: absolute;
   top: 2%;
-  left: 2%;
+  right: 2%;
+  z-index: 8;
 }
 
 .title-screen {
