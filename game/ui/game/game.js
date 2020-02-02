@@ -17,7 +17,6 @@ Template.game.onCreated(function () {
 
   instance.autorun(() => {
     const data = Template.currentData()
-    console.log(data)
     const { gameId } = data.params
     const sub = Meteor.subscribe(Game.publications.current.name, { _id: gameId })
     if (sub.ready()) {
@@ -43,7 +42,6 @@ Template.game.onCreated(function () {
     if (historySub.ready()) {
       const historyDoc =History.collection().findOne({ gameId })
       if (historyDoc) {
-        console.log(historyDoc.entries.reverse())
         instance.state.set('history', historyDoc.entries.reverse())
       }
     }

@@ -45,7 +45,6 @@ class GameHandler {
         context.fillRect(0, 0, window.innerWidth * 2, window.innerHeight * 2)
 
         const stars = 2500 - (500 * (index + 1))
-        console.log('stars', index, stars)
         if (!stars) return
         const colorrange = [ 0, 60, 240 ]
         let y
@@ -228,9 +227,8 @@ class GameHandler {
 
     const isNum = x => /[0-9]/.test(x)
     window.document.addEventListener('keydown', function (event) {
-      if (isNum(event.code)) {
-        console.log(event.code)
-      }else if (event.code === 'Space') {
+      // if (isNum(event.code)) {} // TODO change color based on numpad
+      if (event.code === 'Space') {
         const answer = prompt('type in your solution', '')
         display.requestPointerLock()
         if (!answer) return
@@ -279,7 +277,6 @@ class GameHandler {
 
 
     display.addEventListener('click', function () {
-      console.log('click')
       const x = player.x
       const y = player.y
       const d = player.direction
@@ -305,7 +302,6 @@ class GameHandler {
       game.map.set(dx, dy, value)
 
       const color = game.environment.wall.textures[value].background
-      console.warn('update color', index, value, color)
 
       Meteor.call(Game.methods.updateWall.name, { _id, index, value, color }, (err) => {
         if (err) {
